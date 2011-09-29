@@ -3,5 +3,6 @@
     <string name="hello">Hello World, Solarsteuerung!</string>
     <string name="app_name">Solarsteuerung</string>
     <string name="sensor">Lagesensor</string>
+    <string name="draw">Zeichnen</string>
     <string name="send">Senden</string>
 </resources>

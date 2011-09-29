@@ -12,7 +12,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-public class sensors extends Activity implements SensorEventListener {
+public class sensors extends Activity {
 	private SensorManager sensorManager;
 	private boolean color = false; 
 	private View view;
@@ -23,6 +23,7 @@ public class sensors extends Activity implements SensorEventListener {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		try{
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 	            WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -32,14 +33,20 @@ public class sensors extends Activity implements SensorEventListener {
 		view = findViewById(R.id.textView);
 		view.setBackgroundColor(Color.GREEN);
 
-		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		/*sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		sensorManager.registerListener(this,
 				sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 				SensorManager.SENSOR_DELAY_NORMAL);
-		lastUpdate = System.currentTimeMillis();
+		lastUpdate = System.currentTimeMillis();*/
+		Toast.makeText(getApplicationContext(), "dsfasdf", Toast.LENGTH_LONG).show();
+		}
+		catch(Exception e)
+		{
+			Toast.makeText(getApplicationContext(), e.toString() + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+		}
 	}
 
-	@Override
+	/*@Override
 	public void onSensorChanged(SensorEvent event) {
 		if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 			float[] values = event.values;
@@ -93,5 +100,5 @@ public class sensors extends Activity implements SensorEventListener {
 		// unregister listener
 		sensorManager.unregisterListener(this);
 		super.onStop();
-	}
+	}*/
 }
