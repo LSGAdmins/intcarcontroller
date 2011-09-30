@@ -33,11 +33,11 @@ public class Solarsteuerung extends ListActivity{
 	    	}
 	    	if(((TextView) view).getText() == Solarsteuerung.this.getString(R.string.sensor))
 	    	{
-	    		Intent intent = new Intent(Solarsteuerung.this, sensors.class);
+	  	      Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
+	  		          Toast.LENGTH_SHORT).show();
+	    		Intent intent = new Intent(Solarsteuerung.this, orientation.class);
 	    		startActivity(intent);
 	    	}
-	      Toast.makeText(getApplicationContext(), ((TextView) view).getText(),
-	          Toast.LENGTH_SHORT).show();
 	    }
 	  });
 	}
