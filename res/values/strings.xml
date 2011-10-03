@@ -5,4 +5,16 @@
     <string name="sensor">Lagesensor</string>
     <string name="draw">Zeichnen</string>
     <string name="send">Senden</string>
+    <string name="sensor_orientation">Lagesensor</string>
+    <string name="azimuth">Winkel zur Nordrichtung:</string>
+    <string name="pitch">Pitch:</string>
+    <string name="roll">Roll:</string>
+    <string name="car">Auto</string>
+    <string name="speed">Geschwindigkeit (PWM)</string>
+    <string name="speed_text">Geschwindigkeit</string>
+    <string name="steering">Lenkung (PWM)</string>
+    <string name="settings">Einstellungen</string>
+    <string name="dead_angle">Toter Winkel:</string>
+    <string name="slope">Steigung:</string>
+    <string name="steering_text">Lenkung:</string>
 </resources>

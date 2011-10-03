@@ -7,7 +7,7 @@
         <TextView
             android:id="@+id/orientation_label"
             android:layout_column="1"
-            android:text="Orientation"
+            android:text="@+string/sensor_orientation"
             android:textSize="9pt"
             android:padding="3dip" />
     </TableRow>
@@ -16,7 +16,7 @@
         <TextView
             android:id="@+id/orient_x_label"
             android:layout_column="1"
-            android:text="X:"
+            android:text="@+string/azimuth"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -30,7 +30,7 @@
         <TextView
             android:id="@+id/orient_y_label"
             android:layout_column="1"
-            android:text="Y:"
+            android:text="@+string/pitch"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -44,7 +44,7 @@
         <TextView
             android:id="@+id/orient_z_label"
             android:layout_column="1"
-            android:text="Z:"
+            android:text="@+string/roll"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -53,17 +53,15 @@
             android:textSize="8pt"
             android:padding="3dip" />
     </TableRow>
-
-
-
-
-
-
+    <View
+        android:layout_height="2dip"
+        android:background="#FF909090"
+        android:layout_marginTop="10dp"/>
  <TableRow>
         <TextView
             android:id="@+id/car_label"
             android:layout_column="1"
-            android:text="Auto"
+            android:text="@+string/car"
             android:textSize="9pt"
             android:padding="3dip" />
     </TableRow>
@@ -72,7 +70,7 @@
         <TextView
             android:id="@+id/speed_label"
             android:layout_column="1"
-            android:text="Geschwindigkeit: "
+            android:text="@+string/speed"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -86,7 +84,7 @@
         <TextView
             android:id="@+id/steering_label"
             android:layout_column="1"
-            android:text="Lenkung: "
+            android:text="@+string/steering"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -95,4 +93,11 @@
             android:textSize="8pt"
             android:padding="3dip" />
     </TableRow>
+    <Button
+    android:id="@+id/settings"
+    android:layout_width="wrap_content"
+    android:text="@+string/settings"
+    android:onClick="settings_click"
+    
+    android:layout_height="wrap_content" android:layout_marginTop="10dp"/>
 </TableLayout>
