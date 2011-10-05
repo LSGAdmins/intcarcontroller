@@ -8,7 +8,6 @@ import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class settings_orientation extends Activity {
 	int MAX_IGNORE;
