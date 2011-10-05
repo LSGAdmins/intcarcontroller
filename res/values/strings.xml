@@ -17,4 +17,5 @@
     <string name="dead_angle">Toter Winkel:</string>
     <string name="slope">Steigung:</string>
     <string name="steering_text">Lenkung:</string>
+    <string name="reverse_pwm">PWM-Wert invertieren</string>
 </resources>

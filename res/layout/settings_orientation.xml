@@ -47,6 +47,11 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:padding="10dp" />
+        <CheckBox
+        android:text="@+string/reverse_pwm"
+        android:id="@+id/reverse_pwm_speed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
         
         
     <View
@@ -99,4 +104,9 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:padding="10dp" />
+        <CheckBox
+        android:text="@+string/reverse_pwm"
+        android:id="@+id/reverse_pwm_steering"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>
