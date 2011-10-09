@@ -1,12 +1,15 @@
 package com.lsg.solarsteuerung;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,10 +19,12 @@ public class orientation extends Activity implements SensorEventListener {
 
 	orientation_object options = new orientation_object();
 	
-	int   dead_angle_speed;
+	/*int   dead_angle_speed;
 	int   dead_angle_steering;
 	float multiplicator_speed;
-	float multiplicator_steering;
+	float multiplicator_steering;*/
+	private PowerManager pm;
+	WakeLock wakelock;
 	//the sensormangager
 	private SensorManager sensorManager;
 	//some textviews to change content later
@@ -124,16 +129,20 @@ public class orientation extends Activity implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_NORMAL);
 		//get options
 		options.getPrefs(getApplicationContext());
-		this.dead_angle_speed       = options.dead_angle_speed;
+		/*this.dead_angle_speed       = options.dead_angle_speed;
 		this.dead_angle_steering    = options.dead_angle_steering;
 		this.multiplicator_speed    = options.multiplicator_speed;
-		this.multiplicator_steering = options.multiplicator_steering;
+		this.multiplicator_steering = options.multiplicator_steering;*/ 
 		super.onResume();
+		this.pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        this.wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.wakelock.acquire();
 	}
 
 	@Override
 	protected void onPause() {
 		//unregister listener
+		this.wakelock.release();
 		sensorManager.unregisterListener(this);
 		super.onStop();
 	}
