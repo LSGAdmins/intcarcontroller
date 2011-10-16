@@ -18,11 +18,6 @@ import android.widget.TextView;
 public class orientation extends Activity implements SensorEventListener {
 
 	orientation_object options = new orientation_object();
-	
-	/*int   dead_angle_speed;
-	int   dead_angle_steering;
-	float multiplicator_speed;
-	float multiplicator_steering;*/
 	private PowerManager pm;
 	WakeLock wakelock;
 	//the sensormangager
@@ -67,46 +62,6 @@ public class orientation extends Activity implements SensorEventListener {
 			orientation.this.x.setText(new Float(azimuth).toString());
 			orientation.this.y.setText(new Float(pitch).toString());
 			orientation.this.z.setText(new Float(roll).toString());
-
-			/*if(pitch < orientation.this.dead_angle_steering && pitch > -orientation.this.dead_angle_steering) {
-				pitch = 0; //dead angle
-			}
-			else {
-				if(pitch > 0)
-				{
-					pitch -= orientation.this.dead_angle_steering; //remove dead angle
-				}
-				else {
-					pitch += orientation.this.dead_angle_steering; //remove dead angle
-				}
-			}
-			//same again for steering
-			if(roll < orientation.this.dead_angle_speed && roll > -orientation.this.dead_angle_speed) {
-				roll = 0;
-			}
-			else {
-				if(roll > 0) {
-					roll -= orientation.this.dead_angle_speed;
-				}
-				else {
-					roll += orientation.this.dead_angle_speed;
-				}
-			}
-			int speed = (int)(roll * orientation.this.multiplicator_speed + 150);
-			int steering = (int)(pitch * orientation.this.multiplicator_steering + 150);
-			//set limits: 100 - 200
-			if(speed > 200) {
-				speed = 200;
-			}
-			if(speed < 100) {
-				speed = 100;
-			}
-			if(steering < 100) {
-				steering = 100;
-			}
-			if(steering > 200) {
-				steering = 200;
-			}*/
 			int pwm[] = orientation.this.options.getPWM(roll, pitch);
 			//echo speed
 			orientation.this.speed.setText(new Integer(pwm[0]).toString());
@@ -129,10 +84,6 @@ public class orientation extends Activity implements SensorEventListener {
 				SensorManager.SENSOR_DELAY_NORMAL);
 		//get options
 		options.getPrefs(getApplicationContext());
-		/*this.dead_angle_speed       = options.dead_angle_speed;
-		this.dead_angle_steering    = options.dead_angle_steering;
-		this.multiplicator_speed    = options.multiplicator_speed;
-		this.multiplicator_steering = options.multiplicator_steering;*/ 
 		super.onResume();
 		this.pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         this.wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");

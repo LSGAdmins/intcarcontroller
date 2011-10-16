@@ -18,4 +18,7 @@
     <string name="slope">Steigung:</string>
     <string name="steering_text">Lenkung:</string>
     <string name="reverse_pwm">PWM-Wert invertieren</string>
+    <string name="move_zeropoint">Nullpunkt verschieben</string>
+    <string name="zeropoint">Nullpunkt:</string>
+    <string name="delete_preferences">Alle Einstellungen zurücksetzen</string>
 </resources>

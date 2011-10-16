@@ -21,6 +21,7 @@ public final class R {
         public static final int dead_angle_steering=0x7f060018;
         public static final int dead_angle_steeringText=0x7f060017;
         public static final int dead_angle_steering_seek=0x7f060019;
+        public static final int move_zeropointText=0x7f06001e;
         public static final int orient_x_label=0x7f060002;
         public static final int orient_x_value=0x7f060003;
         public static final int orient_y_label=0x7f060004;
@@ -30,7 +31,7 @@ public final class R {
         public static final int orientation_label=0x7f060001;
         public static final int reverse_pwm_speed=0x7f060015;
         public static final int reverse_pwm_steering=0x7f06001d;
-        public static final int sensor=0x7f06001e;
+        public static final int sensor=0x7f060022;
         public static final int settings=0x7f06000d;
         public static final int slope_speed=0x7f060013;
         public static final int slope_speedText=0x7f060012;
@@ -45,6 +46,9 @@ public final class R {
         public static final int steering_label=0x7f06000b;
         public static final int steering_value=0x7f06000c;
         public static final int textView=0x7f060000;
+        public static final int zeropoint=0x7f060020;
+        public static final int zeropointText=0x7f06001f;
+        public static final int zeropoint_seek=0x7f060021;
     }
     public static final class layout {
         public static final int list_item=0x7f030000;
@@ -60,8 +64,10 @@ public final class R {
         public static final int azimuth=0x7f040006;
         public static final int car=0x7f040009;
         public static final int dead_angle=0x7f04000e;
+        public static final int delete_preferences=0x7f040014;
         public static final int draw=0x7f040003;
         public static final int hello=0x7f040000;
+        public static final int move_zeropoint=0x7f040012;
         public static final int pitch=0x7f040007;
         public static final int reverse_pwm=0x7f040011;
         public static final int roll=0x7f040008;
@@ -74,5 +80,6 @@ public final class R {
         public static final int speed_text=0x7f04000b;
         public static final int steering=0x7f04000c;
         public static final int steering_text=0x7f040010;
+        public static final int zeropoint=0x7f040013;
     }
 }

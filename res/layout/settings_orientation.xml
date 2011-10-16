@@ -8,7 +8,9 @@
         android:id="@+id/speedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20dp" />
+        android:textSize="20dp"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp" />
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -17,7 +19,9 @@
                 android:text="@+string/dead_angle"
                 android:id="@+id/dead_angle_speedText"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
                 <TextView
                 android:id="@+id/dead_angle_speed"
                 android:layout_width="wrap_content"
@@ -27,7 +31,8 @@
         android:id="@+id/dead_angle_speed_seek" 
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:padding="10dp"/>
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"/>
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -36,7 +41,9 @@
                 android:text="@+string/slope"
                 android:id="@+id/slope_speedText"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
                 <TextView
                 android:id="@+id/slope_speed"
                 android:layout_width="wrap_content"
@@ -46,15 +53,16 @@
         android:id="@+id/slope_speed_seek" 
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:padding="10dp" />
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp" />
         <CheckBox
         android:text="@+string/reverse_pwm"
         android:id="@+id/reverse_pwm_speed"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-        
-        
-    <View
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:layout_marginLeft="10dp"/>
+        <View
         android:layout_height="2dip"
         android:layout_width="fill_parent"
         android:background="#FF909090"
@@ -65,7 +73,9 @@
         android:id="@+id/steeringText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20dp" />
+        android:textSize="20dp"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp" />
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -74,7 +84,9 @@
                 android:text="@+string/dead_angle"
                 android:id="@+id/dead_angle_steeringText"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
                 <TextView
                 android:id="@+id/dead_angle_steering"
                 android:layout_width="wrap_content"
@@ -84,7 +96,8 @@
         android:id="@+id/dead_angle_steering_seek" 
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:padding="10dp"/>
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"/>
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
@@ -93,7 +106,9 @@
                 android:text="@+string/slope"
                 android:id="@+id/slope_steeringText"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
                 <TextView
                 android:id="@+id/slope_steering"
                 android:layout_width="wrap_content"
@@ -103,10 +118,49 @@
         android:id="@+id/slope_steering_seek" 
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:padding="10dp" />
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp" />
         <CheckBox
         android:text="@+string/reverse_pwm"
         android:id="@+id/reverse_pwm_steering"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingRight="10dp"
+        android:layout_marginLeft="10dp" />    
+       <View
+        android:layout_height="2dip"
+        android:layout_width="fill_parent"
+        android:background="#FF909090"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+        <TextView
+        android:text="@+string/move_zeropoint"
+        android:id="@+id/move_zeropointText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20dp"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp" />
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+                <TextView
+                android:text="@+string/zeropoint"
+                android:id="@+id/zeropointText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" />
+                <TextView
+                android:id="@+id/zeropoint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+        <SeekBar
+        android:id="@+id/zeropoint_seek" 
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingRight="10dp"
+        android:paddingLeft="10dp"/>
 </LinearLayout>

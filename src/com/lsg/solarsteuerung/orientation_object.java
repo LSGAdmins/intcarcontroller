@@ -5,17 +5,21 @@ import android.content.SharedPreferences;
 
 public class orientation_object {
 	public static final String PREFERENCES = "preferencesDocument";
-	int   dead_angle_speed;
-	int   dead_angle_steering;
-	float multiplicator_speed;
-	float multiplicator_steering;
-	int   multiplicator_speed_raw;
-	int   multiplicator_steering_raw;
-	int   MAX_IGNORE = 10;
-	int   MAX_SLOPE  = 10;
-	int   MIN_SLOPE  = 3;
+	int     dead_angle_speed;
+	int     dead_angle_steering;
+	float   multiplicator_speed;
+	float   multiplicator_steering;
+	int     multiplicator_speed_raw;
+	int     multiplicator_steering_raw;
+	int     MAX_IGNORE = 10;
+	int     MAX_SLOPE  = 10;
+	int     MIN_SLOPE  = 3;
+	int     MAX_ZEROPOINT = 80;
 	boolean reverse_pwm_speed;
 	boolean reverse_pwm_steering;
+	int     zeropoint;
+	int     zeropoint_raw;
+	boolean no_clean = false;
 	public void getPrefs(Context context) {
 		SharedPreferences settings      = context.getSharedPreferences(PREFERENCES, 0);
 		this.dead_angle_speed           = settings.getInt("dead_angle_speed", 5);
@@ -24,21 +28,29 @@ public class orientation_object {
 		this.multiplicator_steering     = (settings.getInt("multiplicator_steering", 4)+3)/10F;
 		this.multiplicator_speed_raw    = settings.getInt("multiplicator_speed", 4);
 		this.multiplicator_steering_raw = settings.getInt("multiplicator_steering", 4);
-		this.reverse_pwm_speed           = settings.getBoolean("reverse_pwm_speed", false);
-		this.reverse_pwm_steering        = settings.getBoolean("reverse_pwm_steering", false);
+		this.reverse_pwm_speed          = settings.getBoolean("reverse_pwm_speed", false);
+		this.reverse_pwm_steering       = settings.getBoolean("reverse_pwm_steering", false);
+		this.zeropoint_raw              = settings.getInt("zeropoint", 40);
+		this.zeropoint                  = settings.getInt("zeropoint", 40)-40;
 	}
 	public void writePrefs(Context context) {
-		SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);
-	    SharedPreferences.Editor editor = settings.edit();
-	    editor.putInt("multiplicator_steering", this.multiplicator_steering_raw);
-	    editor.putInt("multiplicator_speed",    this.multiplicator_speed_raw);
-	    editor.putInt("dead_angle_steering",    this.dead_angle_steering);
-	    editor.putInt("dead_angle_speed",       this.dead_angle_speed);
-	    editor.putBoolean("reverse_pwm_speed", this.reverse_pwm_speed);
-	    editor.putBoolean("reverse_pwm_steering", this.reverse_pwm_steering);
-	    editor.commit();
+		if(!this.no_clean) {
+			SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putInt("multiplicator_steering",   this.multiplicator_steering_raw);
+			editor.putInt("multiplicator_speed",      this.multiplicator_speed_raw);
+			editor.putInt("dead_angle_steering",      this.dead_angle_steering);
+			editor.putInt("dead_angle_speed",         this.dead_angle_speed);
+			editor.putBoolean("reverse_pwm_speed",    this.reverse_pwm_speed);
+			editor.putBoolean("reverse_pwm_steering", this.reverse_pwm_steering);
+			editor.putInt("zeropoint",                this.zeropoint_raw);
+			editor.commit();
+			}
 	}
 	public int[] getPWM (float roll, float pitch) {
+		roll -= this.zeropoint;
+		if(this.zeropoint > 0)
+			roll *= 55/(Math.abs(this.zeropoint)*0.7);
 		if(pitch < this.dead_angle_steering && pitch > -this.dead_angle_steering) {
 			pitch = 0; //dead angle
 		}
@@ -100,5 +112,12 @@ public class orientation_object {
 		}
 		int returnvalue[] = {speed, steering};
 		return returnvalue;
+	}
+	public void clearValues(Context context) {
+		SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);
+	    SharedPreferences.Editor editor = settings.edit();
+	    editor.clear();
+	    editor.commit();
+	    this.no_clean = true;
 	}
 }
