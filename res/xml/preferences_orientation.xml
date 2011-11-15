@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+        <PreferenceCategory
+                android:title="@+string/general_settings">
+                <CheckBoxPreference
+                        android:title="@+string/fortyfive_angle"
+                        android:defaultValue="false"
+                        android:summary="@+string/fortyfive_angle_summary"
+                        android:key="fortyfive_angle" />
+        </PreferenceCategory>
+        <PreferenceCategory
+                android:title="@+string/speed">
+                 <ListPreference
+                        android:title="@+string/speed_slope"
+                        android:summary="@+string/speed_slope_summary"
+                        android:key="speed_slope"
+                        android:defaultValue="1"
+                        android:entries="@array/slope_entries"
+                        android:entryValues="@array/slope_values" />
+                <CheckBoxPreference
+                        android:title="@+string/invert_speed"
+                        android:defaultValue="false"
+                        android:summary="@+string/invert_speed_summary"
+                        android:key="invert_speed" />
+                <EditTextPreference
+                        android:name="@+string/dead_angle_speed"
+                        android:summary="@+string/dead_angle_speed_summary"
+                        android:defaultValue="100"
+                        android:inputType="number"
+                        android:title="@+string/dead_angle_speed"
+                        android:numeric="decimal"
+                        android:key="dead_angle_speed" />
+                <EditTextPreference
+                        android:name="@+string/max_speed"
+                        android:summary="@+string/max_speed_summary"
+                        android:defaultValue="200"
+                        android:inputType="number"
+                        android:numeric="decimal"
+                        android:title="@+string/max_speed"
+                        android:key="max_speed" />
+                <EditTextPreference
+                        android:name="@+string/min_speed"
+                        android:summary="@+string/min_speed_summary"
+                        android:defaultValue="100"
+                        android:inputType="number"
+                        android:numeric="decimal"
+                        android:title="@+string/min_speed"
+                        android:key="min_speed" />
+        </PreferenceCategory>
+        <PreferenceCategory
+                android:title="@+string/steering">
+                 <ListPreference
+                        android:title="@+string/steering_slope"
+                        android:summary="@+string/steering_slope_summary"
+                        android:key="steering_slope"
+                        android:defaultValue="1"
+                        android:entries="@array/slope_entries"
+                        android:entryValues="@array/slope_values" />
+                <CheckBoxPreference
+                        android:title="@+string/invert_steering"
+                        android:defaultValue="false"
+                        android:summary="@+string/invert_steering_summary"
+                        android:key="invert_steering" />
+                <EditTextPreference
+                        android:name="@+string/dead_angle_steering"
+                        android:summary="@+string/dead_angle_steering_summary"
+                        android:defaultValue="100"
+                        android:inputType="number"
+                        android:title="@+string/dead_angle_steering"
+                        android:numeric="decimal"
+                        android:key="dead_angle_steering" />
+                <EditTextPreference
+                        android:name="@+string/max_steering"
+                        android:summary="@+string/max_steering_summary"
+                        android:defaultValue="200"
+                        android:inputType="number"
+                        android:numeric="decimal"
+                        android:title="@+string/max_steering"
+                        android:key="max_steering" />
+                <EditTextPreference
+                        android:name="@+string/min_steering"
+                        android:summary="@+string/min_steering_summary"
+                        android:defaultValue="100"
+                        android:inputType="number"
+                        android:title="@+string/min_steering"
+                        android:numeric="decimal"
+                        android:key="min_steering" />
+                        <!--android:maxLength="4" Begrenzung der Anzahl der Stellen-->
+        </PreferenceCategory>
+</PreferenceScreen>

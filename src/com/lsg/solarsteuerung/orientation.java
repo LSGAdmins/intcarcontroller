@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class orientation extends Activity implements SensorEventListener {
 
@@ -47,6 +48,8 @@ public class orientation extends Activity implements SensorEventListener {
 	    this.steering = (TextView) this.findViewById(R.id.steering_value);
         //connect sensormanager
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		Sensor orientationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+		Toast.makeText(getApplicationContext(), new Float(orientationSensor.getMaximumRange()).toString(), Toast.LENGTH_LONG).show();
 		//listener is registered in onResume()
 	}
 

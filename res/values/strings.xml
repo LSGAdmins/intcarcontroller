@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="hello">Hello World, Solarsteuerung!</string>
-    <string name="app_name">Solarsteuerung</string>
+    <string name="app_name">Intcar Controller</string>
     <string name="sensor">Lagesensor</string>
     <string name="draw">Zeichnen</string>
     <string name="send">Senden</string>
@@ -10,15 +10,30 @@
     <string name="pitch">Pitch:</string>
     <string name="roll">Roll:</string>
     <string name="car">Auto</string>
-    <string name="speed">Geschwindigkeit (PWM)</string>
-    <string name="speed_text">Geschwindigkeit</string>
-    <string name="steering">Lenkung (PWM)</string>
+    <string name="speed">Geschwindigkeit</string>
+    <string name="steering">Lenkung</string>
     <string name="settings">Einstellungen</string>
-    <string name="dead_angle">Toter Winkel:</string>
-    <string name="slope">Steigung:</string>
-    <string name="steering_text">Lenkung:</string>
-    <string name="reverse_pwm">PWM-Wert invertieren</string>
-    <string name="move_zeropoint">Nullpunkt verschieben</string>
-    <string name="zeropoint">Nullpunkt:</string>
-    <string name="delete_preferences">Alle Einstellungen zurücksetzen</string>
+    <string name="general_settings">Grundlegende Einstellungen</string>
+    <string name="fortyfive_angle">Grundstellung 45°</string>
+    <string name="fortyfive_angle_summary">Als Grundstellung 45° angekippt</string>
+    <string name="speed_slope">Multiplikator für Geschwindigkeit</string>
+    <string name="speed_slope_summary">Steigung der Funktion für die Geschwindigkeit anpassen</string>
+    <string name="invert_speed">Fahrtrichtung umkehren</string>
+    <string name="invert_speed_summary">Den Wert für die Geschwindigkeit umkehren</string>
+    <string name="steering_slope">Multiplikator für Lenkung</string>
+    <string name="steering_slope_summary">Steigung der Funktion für die Lenkung anpassen</string>
+    <string name="invert_steering">Lenkrichtung umkehren</string>
+    <string name="invert_steering_summary">Den Wert für die Lenkrichtung umkehren</string>
+    <string name="max_speed">Maximaler Wert für die Geschwindigkeit</string>
+    <string name="max_speed_summary"></string>
+    <string name="min_speed">Minimaler Wert für die Geschwindigkeit</string>
+    <string name="min_speed_summary"></string>
+    <string name="max_steering">Maximaler Wert für die Lenkung</string>
+    <string name="max_steering_summary"></string>
+    <string name="min_steering">Minimaler Wert für die Lenkung</string>
+    <string name="min_steering_summary"></string>
+    <string name="dead_angle_steering">Toter Winkel bei der Lenkung</string>
+    <string name="dead_angle_steering_summary"></string>
+    <string name="dead_angle_speed">Toter Winkel für Geschwindigkeit</string>
+    <string name="dead_angle_speed_summary"></string>
 </resources>
