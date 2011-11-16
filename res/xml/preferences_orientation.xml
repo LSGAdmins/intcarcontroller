@@ -14,7 +14,7 @@
                         android:title="@+string/speed_slope"
                         android:summary="@+string/speed_slope_summary"
                         android:key="speed_slope"
-                        android:defaultValue="1"
+                        android:defaultValue="1.0"
                         android:entries="@array/slope_entries"
                         android:entryValues="@array/slope_values" />
                 <CheckBoxPreference
@@ -25,7 +25,7 @@
                 <EditTextPreference
                         android:name="@+string/dead_angle_speed"
                         android:summary="@+string/dead_angle_speed_summary"
-                        android:defaultValue="100"
+                        android:defaultValue="5"
                         android:inputType="number"
                         android:title="@+string/dead_angle_speed"
                         android:numeric="decimal"
@@ -53,7 +53,7 @@
                         android:title="@+string/steering_slope"
                         android:summary="@+string/steering_slope_summary"
                         android:key="steering_slope"
-                        android:defaultValue="1"
+                        android:defaultValue="1.0"
                         android:entries="@array/slope_entries"
                         android:entryValues="@array/slope_values" />
                 <CheckBoxPreference
@@ -64,7 +64,7 @@
                 <EditTextPreference
                         android:name="@+string/dead_angle_steering"
                         android:summary="@+string/dead_angle_steering_summary"
-                        android:defaultValue="100"
+                        android:defaultValue="5"
                         android:inputType="number"
                         android:title="@+string/dead_angle_steering"
                         android:numeric="decimal"

@@ -33,36 +33,31 @@ public class orientation_object {
 		this.reverse_pwm_speed          = settings.getBoolean("invert_speed", false);
 		this.reverse_pwm_steering       = settings.getBoolean("invert_steering", false);
 		this.max_speed                  = Integer.parseInt(settings.getString("max_speed", "200"));
-		this.min_speed                  = Integer.parseInt(settings.getString("min_speed", "-200"));
+		this.min_speed                  = Integer.parseInt(settings.getString("min_speed", "100"));
 		this.max_steering               = Integer.parseInt(settings.getString("max_steering", "200"));
-		this.min_steering               = Integer.parseInt(settings.getString("min_steering", "-200"));
+		this.min_steering               = Integer.parseInt(settings.getString("min_steering", "100"));
 		this.fortyfive_angle            = settings.getBoolean("fortyfive_angle", false);
 		
 		this.middle_speed               = (int)((this.max_speed-this.min_speed)/2)+this.min_speed;
 		this.middle_steering            = (int)((this.max_steering-this.min_steering)/2)+this.min_steering;
-		if(settings.getString("max_speed", "test") == "test") {
-			writeStandardPrefs(context);
-		}
 	}
-	public void writeStandardPrefs(Context context) {
-		if(!this.no_clean) {
+	/*public void writeStandardPrefs(Context context) {
 			SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);
 			SharedPreferences.Editor editor = settings.edit();
-			editor.putInt("multiplicator_steering",   1);
-			editor.putInt("multiplicator_speed",      1);
-			editor.putInt("dead_angle_steering",      5);
-			editor.putInt("dead_angle_speed",         5);
+			editor.putString("multiplicator_steering",   "1.0");
+			editor.putString("multiplicator_speed",      "1.0");
+			editor.putString("dead_angle_steering",      "5");
+			editor.putString("dead_angle_speed",         "5");
 			editor.putBoolean("reverse_pwm_speed",    false);
 			editor.putBoolean("reverse_pwm_steering", false);
 			editor.putBoolean("fortyfive_angle",      false);
-			editor.putInt("max_speed",                200);
-			editor.putInt("min_speed",                100);
-			editor.putInt("max_steering",             200);
-			editor.putInt("min_steering",             100);
+			editor.putString("max_speed",                "200");
+			editor.putString("min_speed",                "100");
+			editor.putString("max_steering",             "200");
+			editor.putString("min_steering",             "100");
 			editor.commit();
-			}
-	}
-	public int[] getPWM (float roll, float pitch) {
+	}*/
+	public int[] getValues (float roll, float pitch) {
 		//roll -= this.zeropoint;
 		//float speedmultiplicator = 80/(this.max_speed-this.min_speed);
 		if(this.fortyfive_angle)

@@ -65,7 +65,7 @@ public class orientation extends Activity implements SensorEventListener {
 			orientation.this.x.setText(new Float(azimuth).toString());
 			orientation.this.y.setText(new Float(pitch).toString());
 			orientation.this.z.setText(new Float(roll).toString());
-			int pwm[] = orientation.this.options.getPWM(roll, pitch);
+			int pwm[] = orientation.this.options.getValues(roll, pitch);
 			//echo speed
 			orientation.this.speed.setText(new Integer(pwm[0]).toString());
 			orientation.this.steering.setText(new Integer(pwm[1]).toString());
