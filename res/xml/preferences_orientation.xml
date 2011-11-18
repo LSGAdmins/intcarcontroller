@@ -29,7 +29,8 @@
                         android:inputType="number"
                         android:title="@+string/dead_angle_speed"
                         android:numeric="decimal"
-                        android:key="dead_angle_speed" />
+                        android:key="dead_angle_speed"
+                        android:maxLength="2" />
                 <EditTextPreference
                         android:name="@+string/max_speed"
                         android:summary="@+string/max_speed_summary"
@@ -68,7 +69,8 @@
                         android:inputType="number"
                         android:title="@+string/dead_angle_steering"
                         android:numeric="decimal"
-                        android:key="dead_angle_steering" />
+                        android:key="dead_angle_steering"
+                        android:maxLength="2" />
                 <EditTextPreference
                         android:name="@+string/max_steering"
                         android:summary="@+string/max_steering_summary"
