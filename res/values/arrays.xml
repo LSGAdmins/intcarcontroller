@@ -1,5 +1,4 @@
 <resources>
-    <!-- Used in View/Spinner1.java -->
     <string-array name="slope_entries">
         <item>0.5</item>
         <item>0.6</item>
@@ -26,4 +25,32 @@
         <item>1.4</item>
         <item>1.5</item>
     </string-array>
+    <array name="profiles">
+        <item>PWM</item>
+        <item>Robby</item>
+    </array>
+    <array name="invert_speed">
+        <item>true</item>
+        <item>false</item>
+    </array>
+    <array name="max_speed">
+        <item>200</item>
+        <item>200</item>
+    </array>
+    <array name="min_speed">
+        <item>100</item>
+        <item>-200</item>
+    </array>
+    <array name="invert_steering">
+        <item>false</item>
+        <item>false</item>
+    </array>
+    <array name="max_steering">
+        <item>200</item>
+        <item>200</item>
+    </array>
+    <array name="min_steering">
+        <item>100</item>
+        <item>-200</item>
+    </array>
 </resources>

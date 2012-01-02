@@ -9,8 +9,13 @@ package com.lsg.solarsteuerung;
 
 public final class R {
     public static final class array {
-        /**  Used in View/Spinner1.java 
-         */
+        public static final int invert_speed=0x7f050003;
+        public static final int invert_steering=0x7f050006;
+        public static final int max_speed=0x7f050004;
+        public static final int max_steering=0x7f050007;
+        public static final int min_speed=0x7f050005;
+        public static final int min_steering=0x7f050008;
+        public static final int profiles=0x7f050002;
         public static final int slope_entries=0x7f050000;
         public static final int slope_values=0x7f050001;
     }
