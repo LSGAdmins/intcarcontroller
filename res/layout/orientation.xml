@@ -1,32 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-   android:layout_width="fill_parent" 
-   android:layout_height="wrap_content"
-   android:padding="10px" >
-    <ImageSwitcher
-        android:id="@+id/info"
-        android:layout_width="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_height="wrap_content"
-        android:background="@drawable/solarsteuerung" />
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:stretchColumns="1">
- <TableRow>
+ <!--<TableRow>
         <TextView
             android:id="@+id/orientation_label"
             android:layout_column="1"
-            android:text="@+string/sensor_orientation"
+            android:text="@string/sensor_orientation"
             android:textSize="9pt"
             android:padding="3dip" />
-    </TableRow>
+    </TableRow>-->
    
     <TableRow>
         <TextView
             android:id="@+id/orient_x_label"
             android:layout_column="1"
-            android:text="@+string/azimuth"
+            android:text="@string/azimuth"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -40,7 +30,7 @@
         <TextView
             android:id="@+id/orient_y_label"
             android:layout_column="1"
-            android:text="@+string/pitch"
+            android:text="@string/pitch"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -54,7 +44,7 @@
         <TextView
             android:id="@+id/orient_z_label"
             android:layout_column="1"
-            android:text="@+string/roll"
+            android:text="@string/roll"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -71,7 +61,6 @@
         <TextView
             android:id="@+id/car_label"
             android:layout_column="1"
-            android:text="@+string/car"
             android:textSize="9pt"
             android:padding="3dip" />
     </TableRow>
@@ -80,7 +69,7 @@
         <TextView
             android:id="@+id/speed_label"
             android:layout_column="1"
-            android:text="@+string/speed"
+            android:text="@string/speed"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -94,7 +83,7 @@
         <TextView
             android:id="@+id/steering_label"
             android:layout_column="1"
-            android:text="@+string/steering"
+            android:text="@string/steering"
             android:textSize="8pt"
             android:padding="3dip" />
         <TextView
@@ -103,12 +92,32 @@
             android:textSize="8pt"
             android:padding="3dip" />
     </TableRow>
-    <Button
-    android:id="@+id/settings"
-    android:layout_width="wrap_content"
-    android:text="@+string/settings"
-    android:onClick="settings_click"
-    
-    android:layout_height="wrap_content" android:layout_marginTop="10dp"/>
+    <View
+        android:layout_height="2dip"
+        android:background="#FF909090"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+    <LinearLayout android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+            <ToggleButton android:id="@+id/device_control"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textOn="@string/controlON"
+                android:layout_weight="1"
+                android:textOff="@string/controlOFF"/>
+            <ToggleButton android:id="@+id/screen_lock_control"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textOn="@string/screen_alwaysON"
+                android:layout_weight="1"
+                android:textOff="@string/screen_goOFF"/>
+    </LinearLayout>   
+            <Button
+                android:id="@+id/settings"
+                android:layout_width="fill_parent"
+                android:text="@string/settings"
+                android:onClick="settings_click"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"/>
 </TableLayout>
-</RelativeLayout>

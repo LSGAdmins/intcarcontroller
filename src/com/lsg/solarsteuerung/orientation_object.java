@@ -2,10 +2,12 @@ package com.lsg.solarsteuerung;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
 public class orientation_object {
-	public static final String PREFERENCES = "preferencesDocument";
+	public String PREFERENCES = "preferencesDocument";
+	private long id = 0;
+	public boolean device_control = false;
+	public boolean screen_on      = true;
 	int     dead_angle_speed;
 	int     dead_angle_steering;
 	float   multiplicator_speed;
@@ -24,8 +26,12 @@ public class orientation_object {
 	int     middle_speed;
 	int     middle_steering;
 	boolean fortyfive_angle;
+	public void setId(long _id) {
+		this.id = _id;
+		this.PREFERENCES = new Long(id).toString();
+	}
 	public void getPrefs(Context context) {
-		SharedPreferences settings      = PreferenceManager.getDefaultSharedPreferences(context);
+		SharedPreferences settings      = context.getSharedPreferences(PREFERENCES, 0);
 		this.dead_angle_speed           = Integer.parseInt(settings.getString("dead_angle_speed", "5"));
 		this.dead_angle_steering        = Integer.parseInt(settings.getString("dead_angle_steering", "5"));
 		this.multiplicator_speed        = Float.valueOf(settings.getString("speed_slope", "1.0").trim()).floatValue();
@@ -58,8 +64,6 @@ public class orientation_object {
 			editor.commit();
 	}*/
 	public int[] getValues (float roll, float pitch) {
-		//roll -= this.zeropoint;
-		//float speedmultiplicator = 80/(this.max_speed-this.min_speed);
 		if(this.fortyfive_angle)
 			roll -= 40;
 			roll *= 2;
@@ -101,8 +105,13 @@ public class orientation_object {
 			steering = this.min_steering;
 		if(steering > this.max_steering)
 			steering = this.max_steering;
-		int returnval[] = {speed, steering};
-		return returnval;
+		//int returnval[];
+		if(!(device_control)) {
+			return(new int[] {middle_speed, middle_steering});
+		}
+		else {
+			return(new int[] {speed, steering});
+		}
 	}
 	public void clearValues(Context context) {
 		SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);

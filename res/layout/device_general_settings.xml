@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll" android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:padding="5dp"
+    android:layout_height="fill_parent">
+        <EditText
+             android:id="@+id/device_name_edittext"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:gravity="left"
+             android:padding="3dip"
+             android:layout_marginTop="5dp"
+             android:singleLine="true"
+             android:hint="@string/device_name" />
+        <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+        <EditText
+             android:id="@+id/device_description_edittext"
+             android:layout_height="fill_parent"
+             android:minHeight="150dp"
+             android:layout_width="fill_parent"
+             android:gravity="left"
+             android:padding="3dip"
+             android:hint="@string/device_description"/>
+        </LinearLayout>
+  <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="fill_parent"
+      android:layout_height="40dp">
+      <Button   android:id="@+id/ok_button"
+                android:text="@string/save"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="save"/>
+      </LinearLayout>
+</LinearLayout>
+</ScrollView>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+<TextView android:id="@+id/device_name"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="10dp"
+    android:paddingTop="10dp"
+    android:textSize="26sp" >
+</TextView>
+<TextView android:id="@+id/device_description"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="10dp"
+    android:paddingBottom="10dp"
+    android:textColor="@color/blue"
+    android:textSize="16sp" >
+</TextView>
+<!--<TextView android:id="@+id/last"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="0dp"
+    android:textSize="0sp"
+    android:text="sdafsadf" >
+</TextView>-->
+</LinearLayout>

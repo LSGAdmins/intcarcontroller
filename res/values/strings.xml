@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, Solarsteuerung!</string>
+    <string name="add_device">Gerät hinzufügen</string>
+    <string name="delete">Löschen</string>
+    <string name="really_delete_device">Sind sie sicher, dass sie das Gerät aus der Liste entfernen wollen?</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nein</string>
+    <string name="save">Speichern</string>
+    <string name="edit">Bearbeite</string>
+    <string name="new_device">Neues Gerät</string>
+    <string name="nocontextmenu">Kein Kontext-Menü!</string>
+    <string name="device_name">Gerätename</string>
+    <string name="device_description">Beschreibung des Gerätes</string>
+    <string name="controlON">Gerät wird gesteuert</string>
+    <string name="controlOFF">Keine Steuerung</string>
+    <string name="screen_alwaysON">Bildschirm immer an</string>
+    <string name="screen_goOFF">Bildschirm automatisch aus</string>
     <string name="app_name">Intcar Controller</string>
     <string name="sensor">Lagesensor</string>
     <string name="draw">Zeichnen</string>
@@ -10,8 +24,8 @@
     <string name="pitch">Pitch:</string>
     <string name="roll">Roll:</string>
     <string name="car">Auto</string>
-    <string name="speed">Geschwindigkeit</string>
-    <string name="steering">Lenkung</string>
+    <string name="speed">Geschwindigkeit:</string>
+    <string name="steering">Lenkung:</string>
     <string name="settings">Einstellungen</string>
     <string name="general_settings">Grundlegende Einstellungen</string>
     <string name="fortyfive_angle">Grundstellung 45°</string>
