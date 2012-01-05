@@ -1,7 +1,6 @@
 package com.lsg.solarsteuerung;
 
 import java.util.ArrayList;
-
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;

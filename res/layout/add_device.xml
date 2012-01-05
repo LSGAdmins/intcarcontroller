@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="5dp"
         android:paddingBottom="10dp"
-        android:src="@drawable/icon"/>
+        android:src="@drawable/android:ic_menu_add"/>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/new_device"
         android:layout_width="fill_parent"
@@ -17,5 +17,5 @@
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:textSize="26sp"
-        android:text="@+string/add_device" />
+        android:text="@string/add_device" />
 </LinearLayout>

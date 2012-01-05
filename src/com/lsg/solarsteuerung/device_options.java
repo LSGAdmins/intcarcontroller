@@ -3,6 +3,9 @@ package com.lsg.solarsteuerung;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -42,6 +45,26 @@ public class device_options extends ListActivity{
 	    	}
 	    }
 	  });
+	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.device_options, menu);
+	    return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.device_options_edit:
+	        Intent intent = new Intent(this, device_general_settings.class);
+	        intent.putExtra(db_object.DB_ROWID, id);
+	        intent.putExtra(db_object.DB_DEVICE_NAME, device_name);
+	        startActivity(intent);
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
 	}
 	public void add_opts(Intent intent) {
 		intent.putExtra(db_object.DB_ROWID, device_options.this.id);

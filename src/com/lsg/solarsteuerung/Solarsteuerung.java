@@ -3,6 +3,10 @@ package com.lsg.solarsteuerung;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -28,6 +32,7 @@ public class Solarsteuerung extends ListActivity {
 	long id;
 	private SimpleCursorAdapter device_adapter;
 	private Cursor c;
+
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -44,6 +49,8 @@ public class Solarsteuerung extends ListActivity {
 				new int[] { R.id.device_name, R.id.device_description });
 		this.setListAdapter(device_adapter);
 		registerForContextMenu(getListView()); } catch (Exception e) {Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();}
+		//test
+
 		}
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -64,7 +71,7 @@ public class Solarsteuerung extends ListActivity {
 	public boolean onContextItemSelected(MenuItem item) {
 	  AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 	  id = info.id;
-	  int menuItemIndex = item.getItemId(); //das wäre die nummer der ausgewählten option, wenn mehr als eine verfügbar sein sollte
+	  int menuItemIndex = item.getItemId(); //das ist die nummer der ausgewählten option, wenn mehr als eine verfügbar ist
 	  if(menuItemIndex == 0) {
 		  DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
 			    @Override

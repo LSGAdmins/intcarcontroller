@@ -1,6 +1,9 @@
 package com.lsg.solarsteuerung;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -11,6 +14,9 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -27,6 +33,8 @@ public class orientation extends Activity implements SensorEventListener {
 	private WakeLock wakelock;
 	private boolean screen_on = true;
 	private final String WAKELOCK = "WAKELOCK";
+	private NotificationManager mNotificationManager;
+	private static final int NOTIFICATION_ID = 97;
 	
 	//the sensormangager
 	private SensorManager mSensorManager;
@@ -95,6 +103,27 @@ public class orientation extends Activity implements SensorEventListener {
                 }
             }
         });
+        //notification to jump back (especially when bluetooth connection is established)
+		String ns = Context.NOTIFICATION_SERVICE;
+		mNotificationManager = (NotificationManager) getSystemService(ns);
+		//notification to jump back (especially when bluetooth connection is established)
+        int icon = R.drawable.solarsteuerung;        // icon from resources
+        CharSequence tickerText = getText(R.string.app_name) + ": " + device_name + " " + getText(R.string.running);              // ticker-text
+        long when = System.currentTimeMillis();         // notification time
+        Context context = getApplicationContext();      // application Context
+        CharSequence contentTitle = getText(R.string.app_name);  // message title
+        CharSequence contentText = device_name + " " + getText(R.string.running);      // message text
+
+        Intent notificationIntent = new Intent(this, orientation.class);
+        notificationIntent.putExtra(db_object.DB_DEVICE_NAME, device_name);
+        notificationIntent.putExtra(db_object.DB_ROWID, id);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+        // the next two lines initialize the Notification, using the configurations above
+        Notification notification = new Notification(icon, tickerText, when);
+        notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+        notification.flags = Notification.FLAG_ONGOING_EVENT;
+        mNotificationManager.notify(NOTIFICATION_ID, notification);
 	}
 
 	@Override
@@ -119,9 +148,9 @@ public class orientation extends Activity implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		//don't what this call does, so just log it :D
 		Log.d("Orientation Sensor accuracy has changed", new Integer(accuracy).toString());
 		// TODO Auto-generated method stub
-        //don`t need this
 	}
 
 	@Override
@@ -154,5 +183,32 @@ public class orientation extends Activity implements SensorEventListener {
 		settings.putExtra(db_object.DB_ROWID, id);
 		settings.putExtra(db_object.DB_DEVICE_NAME, device_name);
 		startActivity(settings);
+	}
+	
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.orientation, menu);
+	    return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.orientation_home:
+	    	mNotificationManager.cancel(NOTIFICATION_ID);
+	        Intent intent = new Intent(this, Solarsteuerung.class);
+	        startActivity(intent);
+	        return true;
+	    case R.id.orientation_settings:
+			Intent settings = new Intent(orientation.this, settings_orientation.class);
+			settings.putExtra(db_object.DB_ROWID, id);
+			settings.putExtra(db_object.DB_DEVICE_NAME, device_name);
+			startActivity(settings);
+	    	return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
 	}
 }
