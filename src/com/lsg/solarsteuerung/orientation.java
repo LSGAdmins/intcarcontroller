@@ -22,6 +22,7 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class orientation extends Activity implements SensorEventListener {
@@ -34,11 +35,14 @@ public class orientation extends Activity implements SensorEventListener {
 	private boolean screen_on = true;
 	private final String WAKELOCK = "WAKELOCK";
 	private NotificationManager mNotificationManager;
-	private static final int NOTIFICATION_ID = 97;
+	//private static final int NOTIFICATION_ID = 97;
+	private boolean proximity = false;
+	private boolean is_notified = false;
 	
 	//the sensormangager
 	private SensorManager mSensorManager;
     private Sensor orientation_sensor;
+    private Sensor proximity_sensor;
 	//some textviews to change content later
 	TextView x;
 	TextView y;
@@ -63,6 +67,13 @@ public class orientation extends Activity implements SensorEventListener {
 		    options.setId(id);
 		    device_name = extras.getString(db_object.DB_DEVICE_NAME);
 		    TextView car_label = (TextView) findViewById(R.id.car_label);
+		    try {
+		    	is_notified = extras.getBoolean("is_notified", false);
+		    	Log.d(db_object.TAG, new Boolean(is_notified).toString());
+		    }
+		    catch(Exception e) {
+		    	Log.d(db_object.TAG, getString(R.string.no_notification));
+		    }
 		    car_label.setText(device_name);
 		    setTitle(device_name); //useless
 		}
@@ -77,13 +88,17 @@ public class orientation extends Activity implements SensorEventListener {
 
 	    mSensorManager     = (SensorManager)getSystemService(SENSOR_SERVICE);
         orientation_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
+        proximity_sensor  = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         final ToggleButton device_control = (ToggleButton) findViewById(R.id.device_control);
+        device_control.setChecked(is_notified);
         device_control.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
                 // Perform action on clicks
                 if (device_control.isChecked()) {
                 	options.device_control = true;
+                	notificate();
                 } else {
+        	    	stopNotification();
                     options.device_control = false;
                 }
             }
@@ -103,27 +118,6 @@ public class orientation extends Activity implements SensorEventListener {
                 }
             }
         });
-        //notification to jump back (especially when bluetooth connection is established)
-		String ns = Context.NOTIFICATION_SERVICE;
-		mNotificationManager = (NotificationManager) getSystemService(ns);
-		//notification to jump back (especially when bluetooth connection is established)
-        int icon = R.drawable.solarsteuerung;        // icon from resources
-        CharSequence tickerText = getText(R.string.app_name) + ": " + device_name + " " + getText(R.string.running);              // ticker-text
-        long when = System.currentTimeMillis();         // notification time
-        Context context = getApplicationContext();      // application Context
-        CharSequence contentTitle = getText(R.string.app_name);  // message title
-        CharSequence contentText = device_name + " " + getText(R.string.running);      // message text
-
-        Intent notificationIntent = new Intent(this, orientation.class);
-        notificationIntent.putExtra(db_object.DB_DEVICE_NAME, device_name);
-        notificationIntent.putExtra(db_object.DB_ROWID, id);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-        // the next two lines initialize the Notification, using the configurations above
-        Notification notification = new Notification(icon, tickerText, when);
-        notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-        notification.flags = Notification.FLAG_ONGOING_EVENT;
-        mNotificationManager.notify(NOTIFICATION_ID, notification);
 	}
 
 	@Override
@@ -135,21 +129,31 @@ public class orientation extends Activity implements SensorEventListener {
 			float pitch = values[1];
 			float roll = values[2];
 			//set values in text views
-			orientation.this.x.setText(new Float(azimuth).toString());
-			orientation.this.y.setText(new Float(pitch).toString());
-			orientation.this.z.setText(new Float(roll).toString());
+			orientation.this.x.setText(new Float(azimuth).toString()+"°");
+			orientation.this.y.setText(new Float(pitch).toString()+"°");
+			orientation.this.z.setText(new Float(roll).toString()+"°");
 			int pwm[] = orientation.this.options.getValues(roll, pitch);
 			//echo speed
 			orientation.this.speed.setText(new Integer(pwm[0]).toString());
 			orientation.this.steering.setText(new Integer(pwm[1]).toString());
+			}
+		if(event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+			if(event.values[0] > 0.9F) {
+				Toast.makeText(getApplicationContext(), getString(R.string.thanks), Toast.LENGTH_SHORT).show();
+				proximity = true;
+			}
+			else {
+				if(proximity)
+					Toast.makeText(getApplicationContext(), getString(R.string.goaway), Toast.LENGTH_SHORT).show();
+				//Toast.makeText(getApplicationContext(), getString(R.string.thanks), Toast.LENGTH_SHORT).show();
+			}
 		}
-
 	}
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-		//don't what this call does, so just log it :D
-		Log.d("Orientation Sensor accuracy has changed", new Integer(accuracy).toString());
+		//don't know what this call is for, so just log it :D
+		Log.i("Orientation Sensor accuracy has changed", new Integer(accuracy).toString());
 		// TODO Auto-generated method stub
 	}
 
@@ -159,6 +163,7 @@ public class orientation extends Activity implements SensorEventListener {
 		super.onResume();
         //register sensorlistener
 		 mSensorManager.registerListener(this, orientation_sensor, SensorManager.SENSOR_DELAY_NORMAL);
+		 mSensorManager.registerListener(this, proximity_sensor,   SensorManager.SENSOR_DELAY_NORMAL);
 		//get options
 		options.getPrefs(getApplicationContext());
 		
@@ -184,8 +189,6 @@ public class orientation extends Activity implements SensorEventListener {
 		settings.putExtra(db_object.DB_DEVICE_NAME, device_name);
 		startActivity(settings);
 	}
-	
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();
@@ -197,7 +200,7 @@ public class orientation extends Activity implements SensorEventListener {
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	    case R.id.orientation_home:
-	    	mNotificationManager.cancel(NOTIFICATION_ID);
+	    	stopNotification();
 	        Intent intent = new Intent(this, Solarsteuerung.class);
 	        startActivity(intent);
 	        return true;
@@ -210,5 +213,46 @@ public class orientation extends Activity implements SensorEventListener {
 	    default:
 	        return super.onOptionsItemSelected(item);
 	    }
+	}
+	private void notificate() {
+		if(!is_notified) {
+			//orientation.this.mNotificationManager.cancelAll();
+			//notification to jump back (especially when bluetooth connection is established)
+			String ns = Context.NOTIFICATION_SERVICE;
+			mNotificationManager = (NotificationManager) getSystemService(ns);
+			//notification to jump back (especially when bluetooth connection is established)
+			int icon = R.drawable.solarsteuerung;        // icon from resources
+			CharSequence tickerText = getText(R.string.app_name) + ": " + device_name + " " + getText(R.string.running);
+			long when = System.currentTimeMillis();         // notification time
+			Context context = getApplicationContext();      // application Context
+			CharSequence contentTitle = getText(R.string.app_name);  // message title
+			CharSequence contentText = device_name + " " + getText(R.string.running);      // message text
+			
+			Intent notificationIntent = new Intent(this, orientation.class);
+			notificationIntent.putExtra(db_object.DB_DEVICE_NAME, device_name);
+			notificationIntent.putExtra(db_object.DB_ROWID, id);
+			notificationIntent.putExtra(db_object.DB_ROWID, id);
+			notificationIntent.putExtra("is_notified", true);
+			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			
+			// the next two lines initialize the Notification, using the configurations above
+			Notification notification = new Notification(icon, tickerText, when);
+			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+			notification.flags = Notification.FLAG_ONGOING_EVENT;
+			mNotificationManager.notify((int) id, notification);
+		}
+		Log.d(db_object.TAG, new Boolean(is_notified).toString());
+		is_notified = true;
+	}
+	private void stopNotification() {
+		Log.d(db_object.TAG, "stop");
+		//try {
+		if(is_notified) {
+			//orientation.this.mNotificationManager.cancelAll();
+			int _id = (int) id;
+			mNotificationManager.cancel(_id);
+		}
+		//} catch(Exception e) {Log.e(db_object.TAG, e.getMessage() + "adsf");}
+		is_notified = false;
 	}
 }

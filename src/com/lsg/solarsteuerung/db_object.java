@@ -9,6 +9,7 @@ public class db_object /*extends SQLiteOpenHelper*/ {
 	public static final String DB_DEVICE_DESCRIPTION = "device_description";
 	public static final String DB_STANDARD_DEVICE    = "standard_device";
 	public static final String DB_ROWID              = "_id";
+	public static final String TAG                   = "intcar";
 
 	/*private static final int DATABASE_VERSION = 1;
 	

@@ -3,10 +3,6 @@ package com.lsg.solarsteuerung;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -49,8 +45,6 @@ public class Solarsteuerung extends ListActivity {
 				new int[] { R.id.device_name, R.id.device_description });
 		this.setListAdapter(device_adapter);
 		registerForContextMenu(getListView()); } catch (Exception e) {Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();}
-		//test
-
 		}
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
