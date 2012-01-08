@@ -17,6 +17,7 @@ public class device_general_settings extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		db_object.setTheme(false, this);
 		setContentView(R.layout.device_general_settings);
 		Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
@@ -50,6 +51,7 @@ public class device_general_settings extends Activity {
 		ContentValues values = new ContentValues();
 		values.put(db_object.DB_DEVICE_NAME, device_name);
 		values.put(db_object.DB_DEVICE_DESCRIPTION, device_desc);
+		values.put(db_object.DB_STANDARD_DEVICE, "false");
 		if(known_id)
 			myDB.update(db_object.DB_TABLE, values, db_object.DB_ROWID+" = ?", new String [] {new Long(id).toString()});
 		else

@@ -13,6 +13,7 @@
     <string name="edit">Bearbeite</string>
     <string name="new_device">Neues Gerät</string>
     <string name="nocontextmenu">Kein Kontext-Menü!</string>
+    <string name="reset_values">Einstellungen zurücksetzen</string>
     <string name="device_name">Gerätename</string>
     <string name="device_description">Beschreibung des Gerätes</string>
     <string name="controlON">Gerät wird gesteuert</string>

@@ -1,8 +1,12 @@
 package com.lsg.solarsteuerung;
 
+import android.content.Context;
+import android.os.Build;
+import android.util.Log;
 
 
-public class db_object /*extends SQLiteOpenHelper*/ {
+
+public class db_object {
 	public static final String DB_NAME               = "intcar";
 	public static final String DB_TABLE              = "devices";
 	public static final String DB_DEVICE_NAME        = "device_name";
@@ -11,34 +15,17 @@ public class db_object /*extends SQLiteOpenHelper*/ {
 	public static final String DB_ROWID              = "_id";
 	public static final String TAG                   = "intcar";
 
-	/*private static final int DATABASE_VERSION = 1;
-	
-	private static final String CREATE_DATABASE = "CREATE TABLE " + db_object.DB_TABLE
-			+ " (" + db_object.DB_ROWID + " integer primary key autoincrement, "
-			+ db_object.DB_DEVICE_NAME + " text not null, "
-			+ db_object.DB_STANDARD_DEVICE + " text not null, "
-			+ db_object.DB_DEVICE_DESCRIPTION + " text not null) "
-			+";";
-
-	public db_object(Context context) {
-		super(context, DB_NAME, null, DATABASE_VERSION);
+	public static void setTheme(boolean dialog, Context context) {
+		int theme = android.R.style.Theme_Black;
+		if(Build.VERSION.SDK_INT >= 11) {
+			theme = 0x0103006b;  //-> android.R.Theme_Holo, needed, because build target is only 2.3.1
+			if(dialog)
+				theme = 0x0103006f;  //-> android.R.Theme_Holo_Dialog, needed, because build target is only 2.3.1
+		} else {
+			if(dialog)
+				theme = android.R.style.Theme_Dialog;
+		}
+		context.setTheme(theme);
+		Log.d("db_object.java", "setting theme");
 	}
-
-	// Method is called during creation of the database
-	@Override
-	public void onCreate(SQLiteDatabase database) {
-		database.execSQL(CREATE_DATABASE);
-	}
-
-	// Method is called during an upgrade of the database,
-	// e.g. if you increase the database version
-	@Override
-	public void onUpgrade(SQLiteDatabase database, int oldVersion,
-			int newVersion) {
-		Log.w(db_object.class.getName(), "Upgrading database from version "
-				+ oldVersion + " to " + newVersion
-				+ ", which will destroy all old data");
-		database.execSQL("DROP TABLE IF EXISTS todo");
-		onCreate(database);
-	}*/
 }

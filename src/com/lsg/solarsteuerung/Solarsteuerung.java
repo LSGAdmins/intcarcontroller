@@ -1,6 +1,5 @@
 package com.lsg.solarsteuerung;
 
-
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
@@ -31,12 +30,14 @@ public class Solarsteuerung extends ListActivity {
 
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
+		//set theme
+		db_object.setTheme(false, this);
+		
 		super.onCreate(savedInstanceState);
 		myDB = this.openOrCreateDatabase(db_object.DB_NAME, MODE_PRIVATE, null);
 		testDB();
         View add_device = LayoutInflater.from(getBaseContext()).inflate(R.layout.add_device, null);
         getListView().addFooterView(add_device);
-		try {
 		updateCursor();
 		device_adapter = new SimpleCursorAdapter(this,
 				R.layout.list_item_devices,
@@ -44,7 +45,7 @@ public class Solarsteuerung extends ListActivity {
 				new String[] { db_object.DB_DEVICE_NAME, db_object.DB_DEVICE_DESCRIPTION },
 				new int[] { R.id.device_name, R.id.device_description });
 		this.setListAdapter(device_adapter);
-		registerForContextMenu(getListView()); } catch (Exception e) {Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_LONG).show();}
+		registerForContextMenu(getListView());
 		}
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
@@ -83,7 +84,6 @@ public class Solarsteuerung extends ListActivity {
 			builder.setMessage(this.getString(R.string.really_delete_device))
 			.setPositiveButton(this.getString(R.string.yes), dialogClickListener)
 			.setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
-		  //Toast.makeText(getApplicationContext(), new Long(info.id).toString(), Toast.LENGTH_LONG).show();
 	  }
 	  if(menuItemIndex == 1) {
 		  Intent intent = new Intent(Solarsteuerung.this, device_general_settings.class);
@@ -97,7 +97,6 @@ public class Solarsteuerung extends ListActivity {
 		super.onListItemClick(l, v, position, id);
 		if(id != -1) {
 			Cursor o = (Cursor) this.getListAdapter().getItem(position);
-			//Toast.makeText(getApplicationContext(), o.getString(0), Toast.LENGTH_LONG).show();
 			Intent intent = new Intent(Solarsteuerung.this, device_options.class);
 			intent.putExtra(db_object.DB_ROWID, o.getLong(0)); // übergebe aktuelle ID
 			Cursor result = myDB.query(db_object.DB_TABLE, new String [] {db_object.DB_DEVICE_NAME}, db_object.DB_ROWID+" = ?",
@@ -105,12 +104,10 @@ public class Solarsteuerung extends ListActivity {
 			result.moveToFirst();
 			startManagingCursor(result);
 			String device_name = result.getString(result.getColumnIndex(db_object.DB_DEVICE_NAME));
-			result.close();
 			intent.putExtra(db_object.DB_DEVICE_NAME, device_name);
 			startActivity(intent);
 		}
 		else {
-			//Toast.makeText(getApplicationContext(), "new device", Toast.LENGTH_LONG).show();
 			Intent intent = new Intent(Solarsteuerung.this, device_general_settings.class);
 			startActivity(intent);
 		}

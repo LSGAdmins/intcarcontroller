@@ -1,13 +1,24 @@
 package com.lsg.solarsteuerung;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 
-public class orientation_object {
-	public String PREFERENCES = "preferencesDocument";
+public class orientation_object extends Service {
+	//stuff for the calculation
+	private String PREFERENCES;
 	private long id = 0;
 	public boolean device_control = false;
-	public boolean screen_on      = true;
 	int     dead_angle_speed;
 	int     dead_angle_steering;
 	float   multiplicator_speed;
@@ -26,12 +37,39 @@ public class orientation_object {
 	int     middle_speed;
 	int     middle_steering;
 	boolean fortyfive_angle;
+	//stuff for service
+	private static final String TAG = "orientation_object.java";
+	private Messenger replytoMessenger;
+	//actions: human readable ints and act-Strings
+	public static final String act                = "act";
+	public static final String pitch              = "pitch";
+	public static final String roll               = "roll";
+	public static final String speed              = "speed";
+	public static final String steering           = "steering";
+	public static final String DEVICE_CONTROL_KEY = "device_control";
+	
+	public static final int    nop             = 0;
+	public static final int    sendInitData    = 1;
+	public static final int    sendOrientation = 2;
+	public static final int    sendValues      = 3;
+	public static final int    DEVICE_CONTROL  = 4;
+	//register / unregister / exit
+	public static final int    register        = 100;
+	public static final int    unregister      = 101;
+	public static final int    exit            = 103;
+	//notification
+	private NotificationManager mNotificationManager;
+	private boolean is_notified = false;
+	private String device_name;
+	
 	public void setId(long _id) {
 		this.id = _id;
 		this.PREFERENCES = new Long(id).toString();
+		getPrefs();
 	}
-	public void getPrefs(Context context) {
-		SharedPreferences settings      = context.getSharedPreferences(PREFERENCES, 0);
+	
+	public void getPrefs() {
+		SharedPreferences settings      = getSharedPreferences(PREFERENCES, 0);
 		this.dead_angle_speed           = Integer.parseInt(settings.getString("dead_angle_speed", "5"));
 		this.dead_angle_steering        = Integer.parseInt(settings.getString("dead_angle_steering", "5"));
 		this.multiplicator_speed        = Float.valueOf(settings.getString("speed_slope", "1.0").trim()).floatValue();
@@ -47,22 +85,6 @@ public class orientation_object {
 		this.middle_speed               = (int)((this.max_speed-this.min_speed)/2)+this.min_speed;
 		this.middle_steering            = (int)((this.max_steering-this.min_steering)/2)+this.min_steering;
 	}
-	/*public void writeStandardPrefs(Context context) {
-			SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);
-			SharedPreferences.Editor editor = settings.edit();
-			editor.putString("multiplicator_steering",   "1.0");
-			editor.putString("multiplicator_speed",      "1.0");
-			editor.putString("dead_angle_steering",      "5");
-			editor.putString("dead_angle_speed",         "5");
-			editor.putBoolean("reverse_pwm_speed",    false);
-			editor.putBoolean("reverse_pwm_steering", false);
-			editor.putBoolean("fortyfive_angle",      false);
-			editor.putString("max_speed",                "200");
-			editor.putString("min_speed",                "100");
-			editor.putString("max_steering",             "200");
-			editor.putString("min_steering",             "100");
-			editor.commit();
-	}*/
 	public int[] getValues (float roll, float pitch) {
 		if(this.fortyfive_angle)
 			roll -= 40;
@@ -113,11 +135,106 @@ public class orientation_object {
 			return(new int[] {speed, steering});
 		}
 	}
-	public void clearValues(Context context) {
-		SharedPreferences settings   = context.getSharedPreferences(PREFERENCES, 0);
-	    SharedPreferences.Editor editor = settings.edit();
-	    editor.clear();
-	    editor.commit();
-	    this.no_clean = true;
+    @Override
+    public void onCreate() {
+        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+    }
+    
+    @Override
+    public void onDestroy() {
+        stopNotification();
+    }
+    /**
+     * When binding to the service, we return an interface to our messenger
+     * for sending messages to the service.
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mMessenger.getBinder();
+    }
+    
+	private void notificate() {
+		if(!is_notified) {
+			//orientation.this.mNotificationManager.cancelAll();
+			//notification to jump back (especially when bluetooth connection is established)
+			String ns = Context.NOTIFICATION_SERVICE;
+			mNotificationManager = (NotificationManager) getSystemService(ns);
+			//notification to jump back (especially when bluetooth connection is established)
+			int icon = R.drawable.solarsteuerung;        // icon from resources
+			CharSequence tickerText = getText(R.string.app_name) + ": " + device_name + " " + getText(R.string.running);
+			long when = System.currentTimeMillis();         // notification time
+			Context context = getApplicationContext();      // application Context
+			CharSequence contentTitle = getText(R.string.app_name);  // message title
+			CharSequence contentText = device_name + " " + getText(R.string.running);      // message text
+			
+			Intent notificationIntent = new Intent(this, orientation.class);
+			notificationIntent.putExtra(db_object.DB_DEVICE_NAME, device_name);
+			notificationIntent.putExtra(db_object.DB_ROWID, id);
+			notificationIntent.putExtra(db_object.DB_ROWID, id);
+			notificationIntent.putExtra("is_notified", true);
+			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			
+			// the next two lines initialize the Notification, using the configurations above
+			Notification notification = new Notification(icon, tickerText, when);
+			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+			notification.flags = Notification.FLAG_ONGOING_EVENT;
+			mNotificationManager.notify((int) id, notification);
+		}
+		is_notified = true;
 	}
+	private void stopNotification() {
+		if(is_notified) {
+			int _id = (int) id;
+			mNotificationManager.cancel(_id);
+		}
+		is_notified = false;
+	}
+	//communication
+	class IncomingHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+        	Bundle data = msg.getData();
+            switch (data.getInt("act", nop)) {
+            case sendInitData:
+            	setId(data.getLong(db_object.DB_ROWID));
+            	device_name = data.getString(db_object.DB_DEVICE_NAME);
+                notificate();
+            	break;
+            case sendOrientation:
+            	float roll_val  = data.getFloat(roll);
+            	float pitch_val = data.getFloat(pitch);
+            	int [] values = getValues(roll_val, pitch_val);
+    			try {
+    				//Message -> send data to service
+    				Message msgback = new Message();
+    				//give id & device name
+    				Bundle info = new Bundle();
+    				info.putInt(speed,    values[0]);
+    				info.putInt(steering, values[1]);
+    				info.putInt(orientation_object.act, orientation_object.sendValues);
+    				msgback.setData(info);
+    				replytoMessenger.send(msgback);
+    			} catch (RemoteException e) {
+    				//the activity did some bullshit
+    			}
+            	break;
+            case DEVICE_CONTROL:
+            	device_control = data.getBoolean(DEVICE_CONTROL_KEY);
+            	getPrefs(); //update preferences, e.g. if last activity was preferences NOTE this is not the optimum, i think this call is done much to often
+            	break;
+            case nop:
+            	default:
+            		if(msg.what == register)
+            			replytoMessenger = msg.replyTo;
+            		if(msg.what == unregister)
+            			device_control = false;
+            		if(msg.what == exit) {
+            			stopNotification();//seems that stopself() is not enough
+            			stopSelf();
+            		}
+                    super.handleMessage(msg);
+            }
+        }
+    }
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
 }

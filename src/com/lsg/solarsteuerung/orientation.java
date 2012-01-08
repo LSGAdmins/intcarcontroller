@@ -1,18 +1,22 @@
 package com.lsg.solarsteuerung;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,28 +31,74 @@ import android.widget.ToggleButton;
 
 public class orientation extends Activity implements SensorEventListener {
 
-	private orientation_object options = new orientation_object();
+	private boolean service_bound;
+	Messenger mService = null;
+	
+	class IncomingHandler extends Handler {
+	    @Override
+	    public void handleMessage(Message msg) {
+	    	Bundle info = msg.getData();
+	        switch (info.getInt(orientation_object.act)) {
+	        case orientation_object.sendValues:
+				orientation.this.speed.setText(new Integer(info.getInt(orientation_object.speed)).toString());
+				orientation.this.steering.setText(new Integer(info.getInt(orientation_object.steering)).toString());
+	        	break;
+	            default:
+	            	Log.d(db_object.TAG, "unhandled data");
+	                super.handleMessage(msg);
+	        }
+	    }
+	}
+	
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	private ServiceConnection mConnection = new ServiceConnection() {
+	    public void onServiceConnected(ComponentName className,
+	            IBinder service) {
+	        mService = new Messenger(service);
+	        try {
+	        	//Message for init of service
+	        	Message msg = new Message();
+	        	//give id & device name
+	        	Bundle info = new Bundle();
+	        	info.putLong(db_object.DB_ROWID, id);
+	        	info.putString(db_object.DB_DEVICE_NAME, device_name);
+	        	info.putInt(orientation_object.act, orientation_object.sendInitData);
+	        	msg.setData(info);
+	            mService.send(msg);
+	            
+	            msg = Message.obtain(null, orientation_object.register);
+	            msg.replyTo = mMessenger;
+	            mService.send(msg);
+	        } catch (RemoteException e) {
+	            //the service did some unexpected stuff
+	        }
+	    }
+
+	    public void onServiceDisconnected(ComponentName className) {
+	    	//service disconnected
+	        mService = null;
+	    }
+	};
+	
 	private long id; //id of device
 	private String device_name; //name of device
-	private PowerManager pm;
 	private WakeLock wakelock;
 	private boolean screen_on = true;
 	private final String WAKELOCK = "WAKELOCK";
-	private NotificationManager mNotificationManager;
-	//private static final int NOTIFICATION_ID = 97;
-	private boolean proximity = false;
-	private boolean is_notified = false;
 	
 	//the sensormangager
 	private SensorManager mSensorManager;
     private Sensor orientation_sensor;
     private Sensor proximity_sensor;
+    private int toast_counter = 0;
 	//some textviews to change content later
 	TextView x;
 	TextView y;
 	TextView z;
 	TextView steering;
 	TextView speed;
+	
+	ToggleButton device_control;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -57,6 +107,8 @@ public class orientation extends Activity implements SensorEventListener {
 	            WindowManager.LayoutParams.FLAG_FULLSCREEN); //fullscreen
         setRequestedOrientation(0x00000000); //landscape orientation
         
+        db_object.setTheme(false, this);
+        
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.orientation);
 		
@@ -64,16 +116,8 @@ public class orientation extends Activity implements SensorEventListener {
         Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
 		    id = extras.getLong(db_object.DB_ROWID);
-		    options.setId(id);
 		    device_name = extras.getString(db_object.DB_DEVICE_NAME);
 		    TextView car_label = (TextView) findViewById(R.id.car_label);
-		    try {
-		    	is_notified = extras.getBoolean("is_notified", false);
-		    	Log.d(db_object.TAG, new Boolean(is_notified).toString());
-		    }
-		    catch(Exception e) {
-		    	Log.d(db_object.TAG, getString(R.string.no_notification));
-		    }
 		    car_label.setText(device_name);
 		    setTitle(device_name); //useless
 		}
@@ -89,35 +133,27 @@ public class orientation extends Activity implements SensorEventListener {
 	    mSensorManager     = (SensorManager)getSystemService(SENSOR_SERVICE);
         orientation_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         proximity_sensor  = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        final ToggleButton device_control = (ToggleButton) findViewById(R.id.device_control);
-        device_control.setChecked(is_notified);
+        doBindService();
+        
+        device_control = (ToggleButton) findViewById(R.id.device_control);
+        device_control.setChecked(false);
         device_control.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                // Perform action on clicks
-                if (device_control.isChecked()) {
-                	options.device_control = true;
-                	notificate();
-                } else {
-        	    	stopNotification();
-                    options.device_control = false;
-                }
+            	pauseService(device_control.isChecked());
             }
         });
+        
         final ToggleButton screen_on_button = (ToggleButton) findViewById(R.id.screen_lock_control);
         screen_on_button.setChecked(true);
         screen_on_button.setOnClickListener(new OnClickListener() {
             public void onClick(View v) {
-                // Perform action on clicks
-                if (screen_on_button.isChecked()) {
-                	screen_on = true;
-        			orientation.this.wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
-        			orientation.this.wakelock.acquire();
-                } else {
-                    screen_on = false;
-            		orientation.this.wakelock.release();
-                }
+                //set screen on
+            	screen_on = screen_on_button.isChecked();
+            	setScreen(screen_on_button.isChecked());
             }
         });
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
 	}
 
 	@Override
@@ -132,21 +168,24 @@ public class orientation extends Activity implements SensorEventListener {
 			orientation.this.x.setText(new Float(azimuth).toString()+"°");
 			orientation.this.y.setText(new Float(pitch).toString()+"°");
 			orientation.this.z.setText(new Float(roll).toString()+"°");
-			int pwm[] = orientation.this.options.getValues(roll, pitch);
-			//echo speed
-			orientation.this.speed.setText(new Integer(pwm[0]).toString());
-			orientation.this.steering.setText(new Integer(pwm[1]).toString());
+			//Message -> send data to service
+			Bundle info = new Bundle();
+			info.putFloat(orientation_object.pitch, pitch);
+			info.putFloat(orientation_object.roll,  roll);
+			info.putInt(orientation_object.act,     orientation_object.sendOrientation);
+			sendData(info);
+			//the textviews with speed values are filled in the reply of the above message
 			}
-		if(event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-			if(event.values[0] > 0.9F) {
-				Toast.makeText(getApplicationContext(), getString(R.string.thanks), Toast.LENGTH_SHORT).show();
-				proximity = true;
-			}
-			else {
-				if(proximity)
+		if(event.sensor.getType() == Sensor.TYPE_PROXIMITY && !android.os.Build.MODEL.equals("google_sdk")) {
+			if(toast_counter < 6) {
+				if(event.values[0] == 1.0F) {
+					Toast.makeText(getApplicationContext(), getString(R.string.thanks), Toast.LENGTH_SHORT).show();
+					}
+				else {
 					Toast.makeText(getApplicationContext(), getString(R.string.goaway), Toast.LENGTH_SHORT).show();
-				//Toast.makeText(getApplicationContext(), getString(R.string.thanks), Toast.LENGTH_SHORT).show();
+					}
 			}
+			toast_counter++;
 		}
 	}
 
@@ -154,40 +193,29 @@ public class orientation extends Activity implements SensorEventListener {
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		//don't know what this call is for, so just log it :D
 		Log.i("Orientation Sensor accuracy has changed", new Integer(accuracy).toString());
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	protected void onResume() {
-
+		//start service recording
+		pauseService(device_control.isChecked());
 		super.onResume();
         //register sensorlistener
 		 mSensorManager.registerListener(this, orientation_sensor, SensorManager.SENSOR_DELAY_NORMAL);
 		 mSensorManager.registerListener(this, proximity_sensor,   SensorManager.SENSOR_DELAY_NORMAL);
-		//get options
-		options.getPrefs(getApplicationContext());
-		
-		this.pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-		if(screen_on) {
-			this.wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
-			this.wakelock.acquire();
-		}
+		 //screen wakelock
+		 setScreen(screen_on);
 	}
 
 	@Override
 	protected void onPause() {
+		//pause the service
+		pauseService(false);
+		//let device control screen
+		setScreen(false);
 		//unregister listener
-		if(wakelock.isHeld())
-			this.wakelock.release();
 		mSensorManager.unregisterListener(this);
 		super.onStop();
-	}
-	public void settings_click(View view)  {
-		//intent for settings activity
-		Intent settings = new Intent(orientation.this, settings_orientation.class);
-		settings.putExtra(db_object.DB_ROWID, id);
-		settings.putExtra(db_object.DB_DEVICE_NAME, device_name);
-		startActivity(settings);
 	}
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -200,7 +228,12 @@ public class orientation extends Activity implements SensorEventListener {
 	    // Handle item selection
 	    switch (item.getItemId()) {
 	    case R.id.orientation_home:
-	    	stopNotification();
+    		try {
+    			Message msg = Message.obtain(null, orientation_object.exit);
+    			mService.send(msg);
+    			} catch (RemoteException e) {
+    				//what the heck is going on with the service???
+    				}
 	        Intent intent = new Intent(this, Solarsteuerung.class);
 	        startActivity(intent);
 	        return true;
@@ -214,45 +247,57 @@ public class orientation extends Activity implements SensorEventListener {
 	        return super.onOptionsItemSelected(item);
 	    }
 	}
-	private void notificate() {
-		if(!is_notified) {
-			//orientation.this.mNotificationManager.cancelAll();
-			//notification to jump back (especially when bluetooth connection is established)
-			String ns = Context.NOTIFICATION_SERVICE;
-			mNotificationManager = (NotificationManager) getSystemService(ns);
-			//notification to jump back (especially when bluetooth connection is established)
-			int icon = R.drawable.solarsteuerung;        // icon from resources
-			CharSequence tickerText = getText(R.string.app_name) + ": " + device_name + " " + getText(R.string.running);
-			long when = System.currentTimeMillis();         // notification time
-			Context context = getApplicationContext();      // application Context
-			CharSequence contentTitle = getText(R.string.app_name);  // message title
-			CharSequence contentText = device_name + " " + getText(R.string.running);      // message text
-			
-			Intent notificationIntent = new Intent(this, orientation.class);
-			notificationIntent.putExtra(db_object.DB_DEVICE_NAME, device_name);
-			notificationIntent.putExtra(db_object.DB_ROWID, id);
-			notificationIntent.putExtra(db_object.DB_ROWID, id);
-			notificationIntent.putExtra("is_notified", true);
-			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-			
-			// the next two lines initialize the Notification, using the configurations above
-			Notification notification = new Notification(icon, tickerText, when);
-			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-			notification.flags = Notification.FLAG_ONGOING_EVENT;
-			mNotificationManager.notify((int) id, notification);
-		}
-		Log.d(db_object.TAG, new Boolean(is_notified).toString());
-		is_notified = true;
+	@Override
+	protected void onDestroy() {
+	    super.onDestroy();
+	    if (service_bound) {
+	    	if (mService != null) {
+	    		try {
+	    			Message msg = Message.obtain(null, orientation_object.unregister);
+	    			mService.send(msg);
+	    			} catch (RemoteException e) {
+	    				//what the heck is going on with the service???
+	    				}
+	    		}
+	    	}
+	    unbindService(mConnection);
+	    service_bound = false;
+	    }
+	public void settings_click(View view)  {
+		//intent for settings activity
+		Intent settings = new Intent(orientation.this, settings_orientation.class);
+		settings.putExtra(db_object.DB_ROWID, id);
+		settings.putExtra(db_object.DB_DEVICE_NAME, device_name);
+		startActivity(settings);
 	}
-	private void stopNotification() {
-		Log.d(db_object.TAG, "stop");
-		//try {
-		if(is_notified) {
-			//orientation.this.mNotificationManager.cancelAll();
-			int _id = (int) id;
-			mNotificationManager.cancel(_id);
+	private void pauseService(boolean device_control_val) {
+		//Message -> (de)activate control of device
+		Bundle info = new Bundle();
+		info.putBoolean(orientation_object.DEVICE_CONTROL_KEY, device_control_val);
+		info.putInt(orientation_object.act,                    orientation_object.DEVICE_CONTROL);
+		sendData(info);
 		}
-		//} catch(Exception e) {Log.e(db_object.TAG, e.getMessage() + "adsf");}
-		is_notified = false;
+	void doBindService() {
+		if(bindService(new Intent(this, orientation_object.class), mConnection, Context.BIND_AUTO_CREATE))
+			service_bound = true;
+		}
+	private void setScreen(boolean on) {
+		if(screen_on && !wakelock.isHeld()) {
+			wakelock.acquire();
+		}
+		else {
+			if(wakelock.isHeld())
+				wakelock.release();
+		}
+		}
+	private void sendData(Bundle data) {
+		try {
+			//Message -> (de)activate control of device
+			Message msg = new Message();
+			msg.setData(data);
+			orientation.this.mService.send(msg);
+			} catch (Exception e) {
+				//the service did some bullshit
+				}
+		}
 	}
-}

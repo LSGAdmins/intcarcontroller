@@ -1,8 +1,13 @@
 package com.lsg.solarsteuerung;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 public class settings_orientation extends PreferenceActivity {
 	private long id;
@@ -11,6 +16,8 @@ public class settings_orientation extends PreferenceActivity {
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            
+            db_object.setTheme(false, this);
             
             //get extras (id of device, used in preference file)
             Bundle extras = getIntent().getExtras();
@@ -29,4 +36,30 @@ public class settings_orientation extends PreferenceActivity {
 
             addPreferencesFromResource(R.xml.preferences_orientation);
     }
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.settings_orientation, menu);
+	    return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.reset_values:
+	    	PreferenceManager prefMgr = getPreferenceManager();
+	    	SharedPreferences shPrefs = prefMgr.getSharedPreferences();
+	    	SharedPreferences.Editor edit = shPrefs.edit();
+	    	edit.clear();
+	    	edit.commit();
+	    	Intent intent = new Intent(this, orientation.class);
+	    	intent.putExtra(db_object.DB_ROWID, id);
+	    	intent.putExtra(db_object.DB_DEVICE_NAME, device_name);
+	    	startActivity(intent);
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
+	}
 }

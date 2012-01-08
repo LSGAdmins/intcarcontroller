@@ -19,6 +19,7 @@ public class device_options extends ListActivity{
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	  super.onCreate(savedInstanceState);
+	  db_object.setTheme(true, this);
 	  Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
 		    id = extras.getLong(db_object.DB_ROWID);
