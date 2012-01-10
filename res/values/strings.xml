@@ -2,6 +2,10 @@
 <resources>
     <string name="app_version">0.1</string>
     <string name="home">Home</string>
+    <string name="about">Über</string>
+    <string name="about_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
+    <string name="help">Hilfe</string>
+    <string name="help_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
     <string name="running">läuft</string>
     <string name="add_device">Gerät hinzufügen</string>
     <string name="no_notification">Activity nicht über Notification aufgerufen!</string>
@@ -9,6 +13,9 @@
     <string name="really_delete_device">Sind sie sicher, dass sie das Gerät aus der Liste entfernen wollen?</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
+    <string name="loading">Lade...</string>
+    <string name="change_mode">Modus wechseln</string>
+    <string name="stop_service">Steuerung beenden</string>
     <string name="save">Speichern</string>
     <string name="edit">Bearbeite</string>
     <string name="new_device">Neues Gerät</string>

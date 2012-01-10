@@ -27,8 +27,7 @@
         <activity android:name="orientation" android:launchMode="singleTop"></activity>
         <activity android:name="device_options" android:theme="@android:style/Theme.Dialog"></activity>
         <activity android:name="device_general_settings"></activity>
-        <service android:name="orientation_object"></service>
-        
-
+        <activity android:name="HelpAbout"></activity>
+        <service android:name="orientation_object" android:process=":orientation_object"></service>
     </application>
 </manifest>

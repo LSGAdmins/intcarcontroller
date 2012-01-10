@@ -3,15 +3,6 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:stretchColumns="1">
- <!--<TableRow>
-        <TextView
-            android:id="@+id/orientation_label"
-            android:layout_column="1"
-            android:text="@string/sensor_orientation"
-            android:textSize="9pt"
-            android:padding="3dip" />
-    </TableRow>-->
-   
     <TableRow>
         <TextView
             android:id="@+id/orient_x_label"
@@ -114,10 +105,10 @@
                 android:textOff="@string/screen_goOFF"/>
     </LinearLayout>   
             <Button
-                android:id="@+id/settings"
+                android:id="@+id/change_mode"
                 android:layout_width="fill_parent"
-                android:text="@string/settings"
-                android:onClick="settings_click"
+                android:text="@string/change_mode"
+                android:onClick="change_mode"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"/>
 </TableLayout>

@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -125,14 +128,39 @@ public class Solarsteuerung extends ListActivity {
     				+ db_object.DB_STANDARD_DEVICE + " text not null, "
     				+ db_object.DB_DEVICE_DESCRIPTION + " text not null) "
     				+";");
-        } catch (Exception e) { Log.d(TAG, e.getMessage());} finally {
-             /*if (myDB != null)
-                  myDB.close();*/
-        }
+        } catch (Exception e) { Log.d(TAG, e.getMessage());}
 	}
 	@Override
 	public void onDestroy() {
 		super.onStop();
 		myDB.close();
+	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.solarsteuerung, menu);
+	    return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent homeIntent = new Intent(this, Solarsteuerung.class);
+	    // Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.orientation_home:
+	        startActivity(homeIntent);
+	        return true;
+	    case R.id.solarsteuerung_help:
+	    	Intent help = new Intent(this, HelpAbout.class);
+	    	help.putExtra(db_object.helpabout, db_object.help);
+	    	startActivity(help);
+	        return true;
+	    case R.id.solarsteuerung_about:
+	    	Intent about = new Intent(this, HelpAbout.class);
+	    	about.putExtra(db_object.helpabout, db_object.about);
+	    	startActivity(about);
+	    	return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
 	}
 }
