@@ -8,12 +8,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 
 public class device_general_settings extends Activity {
 	private long id;
 	private boolean known_id = false;
 	private SQLiteDatabase myDB;
+	private CharSequence[] items;
+	private String device_name;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -21,6 +24,8 @@ public class device_general_settings extends Activity {
 		setContentView(R.layout.device_general_settings);
 		Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
+			Toast.makeText(this, extras.getString(db_object.DB_BTDEVICE_NAME), Toast.LENGTH_LONG);
+			Toast.makeText(this, extras.getString(db_object.DB_DEVICE_MAC), Toast.LENGTH_LONG);
 		    id = extras.getLong(db_object.DB_ROWID);
 		    known_id = true;
 		    //Toast.makeText(getApplicationContext(), new Long(id).toString(), Toast.LENGTH_LONG).show();
@@ -29,7 +34,7 @@ public class device_general_settings extends Activity {
 		    		new String [] {new Long(id).toString()}, null, null, null);
 		    result.moveToFirst();
 		    startManagingCursor(result);
-		    String device_name = result.getString(result.getColumnIndex(db_object.DB_DEVICE_NAME));
+		           device_name = result.getString(result.getColumnIndex(db_object.DB_DEVICE_NAME));
 		    String device_desc = result.getString(result.getColumnIndex(db_object.DB_DEVICE_DESCRIPTION));
 		    result.close();
 		    myDB.close();
@@ -41,6 +46,13 @@ public class device_general_settings extends Activity {
 		}
 		else
 			setTitle(this.getText(R.string.new_device));
+	}
+	public void select_device(View v) {
+		Intent select_device = new Intent(this, Select_device.class);
+		select_device.putExtra(db_object.DB_ROWID, id);
+		select_device.putExtra(db_object.DB_DEVICE_NAME, device_name);
+		startActivity(select_device);
+		finish();
 	}
 	public void save(View v) {
 		EditText edittext_device_name = (EditText) findViewById(R.id.device_name_edittext);

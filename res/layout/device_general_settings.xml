@@ -28,6 +28,11 @@
              android:gravity="left"
              android:padding="3dip"
              android:hint="@string/device_description"/>
+      <Button   android:id="@+id/select_bluetooth_device"
+                android:text="@string/select_bluetooth_device"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:onClick="select_device"/>
         </LinearLayout>
   <LinearLayout
       android:orientation="horizontal"

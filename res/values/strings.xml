@@ -14,6 +14,11 @@
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
     <string name="loading">Lade...</string>
+    <string name="scanning_for_bt_devices">Bluetoothgeräte werden gesucht</string>
+    <string name="no_bt_devices">Keine Bluetoothgeräte</string>
+    <string name="no_bt_devices_desc">Es wurden keine Bluetoothgeräte gefunden</string>
+    <string name="no_bt">Bluetooth nicht aktiviert.</string>
+    <string name="select_bluetooth_device">BT-Gerät auswählen</string>
     <string name="change_mode">Modus wechseln</string>
     <string name="stop_service">Steuerung beenden</string>
     <string name="save">Speichern</string>

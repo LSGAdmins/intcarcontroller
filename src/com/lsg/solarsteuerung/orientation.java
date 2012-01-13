@@ -125,12 +125,6 @@ public class orientation extends Activity implements SensorEventListener, OnGest
 		gestLib.load();
 		setContentView(gestureOverlayView);
 		
-
-		if(Build.VERSION.SDK_INT >=11) {
-			ActionBar actionBar = getActionBar();
-		    actionBar.setDisplayHomeAsUpEnabled(true); //click on logo should go back to modus-selection
-		}
-		
         //get extras (id of device, used in preference file)
         Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
@@ -345,7 +339,8 @@ public class orientation extends Activity implements SensorEventListener, OnGest
 		for (Prediction prediction : predictions) {
 			if (prediction.score > 1.0) {
 				if(prediction.name.equals("right")) {
-					//finish();
+					Intent intent = new Intent(this, draw.class);
+					startActivity(intent);
 					}
 				if(prediction.name.equals("left")) {
 					settings();

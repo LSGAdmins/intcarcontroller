@@ -7,6 +7,8 @@
     <uses-feature android:name="android.hardware.sensor.accelerometer" />
     <uses-feature android:name="android.hardware.sensor.proximity" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     
     <supports-screens android:resizeable="true"
                   android:smallScreens="true"
@@ -29,5 +31,6 @@
         <activity android:name="device_general_settings"></activity>
         <activity android:name="HelpAbout"></activity>
         <service android:name="orientation_object" android:process=":orientation_object"></service>
+        <activity android:name="Select_device" android:theme="@android:style/Theme.Dialog"></activity>
     </application>
 </manifest>
