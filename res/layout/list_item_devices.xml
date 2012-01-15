@@ -15,7 +15,7 @@
     android:layout_height="fill_parent"
     android:paddingLeft="10dp"
     android:paddingBottom="10dp"
-    android:textColor="@color/blue"
+    android:textColor="@color/lightblue"
     android:textSize="16sp" >
 </TextView>
 <!--<TextView android:id="@+id/last"

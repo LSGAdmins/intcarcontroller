@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -34,10 +32,10 @@ public class Solarsteuerung extends ListActivity {
 	/** Called when the activity is first created. */
 	public void onCreate(Bundle savedInstanceState) {
 		//set theme
-		db_object.setTheme(false, this);
+		HelperClass.setTheme(false, this);
 		
 		super.onCreate(savedInstanceState);
-		myDB = this.openOrCreateDatabase(db_object.DB_NAME, MODE_PRIVATE, null);
+		myDB = this.openOrCreateDatabase(HelperClass.DB_NAME, MODE_PRIVATE, null);
 		testDB();
         View add_device = LayoutInflater.from(getBaseContext()).inflate(R.layout.add_device, null);
         getListView().addFooterView(add_device);
@@ -45,7 +43,7 @@ public class Solarsteuerung extends ListActivity {
 		device_adapter = new SimpleCursorAdapter(this,
 				R.layout.list_item_devices,
 				c,
-				new String[] { db_object.DB_DEVICE_NAME, db_object.DB_DEVICE_DESCRIPTION },
+				new String[] { HelperClass.DB_DEVICE_NAME, HelperClass.DB_DEVICE_DESCRIPTION },
 				new int[] { R.id.device_name, R.id.device_description });
 		this.setListAdapter(device_adapter);
 		registerForContextMenu(getListView());
@@ -76,7 +74,7 @@ public class Solarsteuerung extends ListActivity {
 			    public void onClick(DialogInterface dialog, int which) {
 			        switch (which){
 			        case DialogInterface.BUTTON_POSITIVE:
-			        	Solarsteuerung.this.myDB.execSQL("DELETE FROM " + db_object.DB_TABLE + " WHERE " + db_object.DB_ROWID + "='" + (new Long(id).toString()) + "'");
+			        	Solarsteuerung.this.myDB.execSQL("DELETE FROM " + HelperClass.DB_TABLE + " WHERE " + HelperClass.DB_ROWID + "='" + (new Long(id).toString()) + "'");
 			        	updateCursor();
 			        	device_adapter.changeCursor(c);
 			            break;
@@ -89,8 +87,9 @@ public class Solarsteuerung extends ListActivity {
 			.setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
 	  }
 	  if(menuItemIndex == 1) {
-		  Intent intent = new Intent(Solarsteuerung.this, device_general_settings.class);
-		  intent.putExtra(db_object.DB_ROWID, id); // übergebe aktuelle ID
+		  Intent intent = new Intent(Solarsteuerung.this, DeviceGeneralSettings.class);
+		  intent.putExtra(HelperClass.DB_ROWID, id); // übergebe aktuelle ID
+		  intent.putExtra(HelperClass.known_id, true);
 		  startActivity(intent);
 	  }
 	  return true;
@@ -100,34 +99,43 @@ public class Solarsteuerung extends ListActivity {
 		super.onListItemClick(l, v, position, id);
 		if(id != -1) {
 			Cursor o = (Cursor) this.getListAdapter().getItem(position);
-			Intent intent = new Intent(Solarsteuerung.this, device_options.class);
-			intent.putExtra(db_object.DB_ROWID, o.getLong(0)); // übergebe aktuelle ID
-			Cursor result = myDB.query(db_object.DB_TABLE, new String [] {db_object.DB_DEVICE_NAME}, db_object.DB_ROWID+" = ?",
+			Intent intent = new Intent(Solarsteuerung.this, DeviceOptions.class);
+			intent.putExtra(HelperClass.DB_ROWID, o.getLong(0)); // übergebe aktuelle ID
+			Cursor result = myDB.query(HelperClass.DB_TABLE, new String [] {HelperClass.DB_DEVICE_NAME}, HelperClass.DB_ROWID+" = ?",
 					new String [] {new Long(id).toString()}, null, null, null);
 			result.moveToFirst();
 			startManagingCursor(result);
-			String device_name = result.getString(result.getColumnIndex(db_object.DB_DEVICE_NAME));
-			intent.putExtra(db_object.DB_DEVICE_NAME, device_name);
+			String device_name = result.getString(result.getColumnIndex(HelperClass.DB_DEVICE_NAME));
+			intent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
 			startActivity(intent);
 		}
 		else {
-			Intent intent = new Intent(Solarsteuerung.this, device_general_settings.class);
+			Intent intent = new Intent(Solarsteuerung.this, DeviceGeneralSettings.class);
 			startActivity(intent);
 		}
 	}
 	public void updateCursor() {
-		c = myDB.rawQuery("SELECT " + db_object.DB_ROWID + ", " + db_object.DB_DEVICE_NAME + ", " + db_object.DB_DEVICE_DESCRIPTION + " FROM "
-        		+ db_object.DB_TABLE + ";", null);
+		c = myDB.rawQuery("SELECT " + HelperClass.DB_ROWID + ", " + HelperClass.DB_DEVICE_NAME + ", " + HelperClass.DB_DEVICE_DESCRIPTION + " FROM "
+        		+ HelperClass.DB_TABLE + ";", null);
 		startManagingCursor(c);
 	}
 	public void testDB() {
     	try {
-    		myDB.execSQL("CREATE TABLE IF NOT EXISTS " + db_object.DB_TABLE
-    				+ " (" + db_object.DB_ROWID + " integer primary key autoincrement, "
-    				+ db_object.DB_DEVICE_NAME + " text not null, "
-    				+ db_object.DB_STANDARD_DEVICE + " text not null, "
-    				+ db_object.DB_DEVICE_DESCRIPTION + " text not null) "
+    		myDB.execSQL("CREATE TABLE IF NOT EXISTS " + HelperClass.DB_TABLE
+    				+ " (" + HelperClass.DB_ROWID       + " integer primary key autoincrement, "
+    				+ HelperClass.DB_DEVICE_NAME        + " text not null, "
+    				+ HelperClass.DB_STANDARD_DEVICE    + " text not null, "
+    				+ HelperClass.DB_BTDEVICE_NAME      + " text not null, "
+    				+ HelperClass.DB_DEVICE_MAC         + " text not null, "
+    				+ HelperClass.DB_DEVICE_DESCRIPTION + " text not null) "
     				+";");
+    		//upgrades for table
+    		if(myDB.getVersion() == 0) {
+    			myDB.execSQL("ALTER TABLE " + HelperClass.DB_TABLE + " ADD " + HelperClass.DB_BTDEVICE_NAME + " text not null DEFAULT 'null';");
+    			myDB.execSQL("ALTER TABLE " + HelperClass.DB_TABLE + " ADD " + HelperClass.DB_DEVICE_MAC    + " text not null DEFAULT 'null';");
+    			myDB.setVersion(2);
+    		}
+    		Log.d("asdf", new Integer(myDB.getVersion()).toString());
         } catch (Exception e) { Log.d(TAG, e.getMessage());}
 	}
 	@Override
@@ -151,12 +159,12 @@ public class Solarsteuerung extends ListActivity {
 	        return true;
 	    case R.id.solarsteuerung_help:
 	    	Intent help = new Intent(this, HelpAbout.class);
-	    	help.putExtra(db_object.helpabout, db_object.help);
+	    	help.putExtra(HelperClass.helpabout, HelperClass.help);
 	    	startActivity(help);
 	        return true;
 	    case R.id.solarsteuerung_about:
 	    	Intent about = new Intent(this, HelpAbout.class);
-	    	about.putExtra(db_object.helpabout, db_object.about);
+	    	about.putExtra(HelperClass.helpabout, HelperClass.about);
 	    	startActivity(about);
 	    	return true;
 	    default:

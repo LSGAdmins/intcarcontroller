@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:padding="5dp"
-    android:layout_height="fill_parent">
+    android:layout_height="wrap_content">
         <EditText
              android:id="@+id/device_name_edittext"
              android:layout_width="fill_parent"
@@ -23,11 +23,28 @@
         <EditText
              android:id="@+id/device_description_edittext"
              android:layout_height="fill_parent"
-             android:minHeight="150dp"
+             android:minHeight="100dp"
              android:layout_width="fill_parent"
              android:gravity="left"
              android:padding="3dip"
              android:hint="@string/device_description"/>
+        <TextView android:id="@+id/device_BT_name"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:textSize="26sp"
+                android:text="@string/no_bt_device_selected" >
+        </TextView>
+        <TextView android:id="@+id/device_mac"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:paddingLeft="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/lightblue"
+            android:textSize="16sp"
+                android:text="@string/no_bt_device_selected_desc" >
+        </TextView>
       <Button   android:id="@+id/select_bluetooth_device"
                 android:text="@string/select_bluetooth_device"
                 android:layout_width="fill_parent"

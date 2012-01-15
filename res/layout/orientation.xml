@@ -3,18 +3,21 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:stretchColumns="1">
+            android:color="@color:orange"
     <TableRow>
         <TextView
             android:id="@+id/orient_x_label"
             android:layout_column="1"
             android:text="@string/azimuth"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/darkgreen" />
         <TextView
             android:id="@+id/orient_x_value"
             android:gravity="right"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/darkgreen" />
     </TableRow>
 
     <TableRow>
@@ -23,12 +26,14 @@
             android:layout_column="1"
             android:text="@string/pitch"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightgreen" />
         <TextView
             android:id="@+id/orient_y_value"
             android:gravity="right"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightgreen" />
     </TableRow>
 
     <TableRow>
@@ -37,23 +42,26 @@
             android:layout_column="1"
             android:text="@string/roll"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightgreen" />
         <TextView
             android:id="@+id/orient_z_value"
             android:gravity="right"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightgreen" />
     </TableRow>
     <View
         android:layout_height="2dip"
-        android:background="#FF909090"
-        android:layout_marginTop="10dp"/>
+        android:layout_marginTop="10dp"
+        android:background="@color/darkorange" />
  <TableRow>
         <TextView
             android:id="@+id/car_label"
             android:layout_column="1"
             android:textSize="9pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/darkblue" />
     </TableRow>
    
     <TableRow>
@@ -62,12 +70,14 @@
             android:layout_column="1"
             android:text="@string/speed"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightblue" />
         <TextView
             android:id="@+id/speed_value"
             android:gravity="right"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightblue" />
     </TableRow>
 
     <TableRow>
@@ -76,18 +86,20 @@
             android:layout_column="1"
             android:text="@string/steering"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightblue" />
         <TextView
             android:id="@+id/steering_value"
             android:gravity="right"
             android:textSize="8pt"
-            android:padding="3dip" />
+            android:padding="3dip"
+            android:textColor="@color/lightblue" />
     </TableRow>
     <View
         android:layout_height="2dip"
-        android:background="#FF909090"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginBottom="10dp"
+        android:background="@color/lightred" />
     <LinearLayout android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">

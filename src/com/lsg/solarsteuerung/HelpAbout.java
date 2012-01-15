@@ -11,10 +11,10 @@ public class HelpAbout extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		db_object.setTheme(false, this);
+		HelperClass.setTheme(false, this);
 		Bundle data = getIntent().getExtras();
-		String type = data.getString(db_object.helpabout);
-		if(type.equals(db_object.help)) {
+		String type = data.getString(HelperClass.helpabout);
+		if(type.equals(HelperClass.help)) {
 			setContentView(R.layout.help);
 			setTitle(getString(R.string.help));
 		}
