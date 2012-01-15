@@ -15,7 +15,8 @@
              android:padding="3dip"
              android:layout_marginTop="5dp"
              android:singleLine="true"
-             android:hint="@string/device_name" />
+             android:hint="@string/device_name"
+             android:inputType="textCapSentences|textNoSuggestions" />
         <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"
@@ -27,7 +28,8 @@
              android:layout_width="fill_parent"
              android:gravity="left"
              android:padding="3dip"
-             android:hint="@string/device_description"/>
+             android:hint="@string/device_description"
+             android:inputType="textCapSentences" />
         <TextView android:id="@+id/device_BT_name"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
