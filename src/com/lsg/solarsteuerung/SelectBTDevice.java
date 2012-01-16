@@ -130,7 +130,8 @@ public class SelectBTDevice extends ListActivity {
 	            if (resultCode == Activity.RESULT_OK) {
 	                discoverDevices();
 	            } else {
-	                Log.d("intcar", "Bluetooth not enabled");
+					 Intent intent = toSettings();
+					 startActivity(intent);
 	                Toast.makeText(this, R.string.no_bt, Toast.LENGTH_SHORT).show();
 	                finish();
 	            }
@@ -138,7 +139,6 @@ public class SelectBTDevice extends ListActivity {
 	    }
 	 public void discoverDevices() {
 		 btdevices.clear();
-		 Log.d("asdf", "discoverDevices()");
 		 Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 		// If there are paired devices
 		if (pairedDevices.size() > 0) {
@@ -165,8 +165,12 @@ public class SelectBTDevice extends ListActivity {
 			 if(BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 				 setProgressBarIndeterminateVisibility(false);
 				    String titlename = SelectBTDevice.this.device_name;
-				    if(titlename == null)
-				    	titlename = getString(R.string.new_device);
+				    try {
+				    	if(titlename == null || titlename.equals(""))
+				    		titlename = getString(R.string.new_device);
+				    } catch(Exception e) {
+				    	//maybe crash on equals???
+				    }
 				 setTitle(getString(R.string.select_bluetooth_device) + " » " + titlename);
 				 if (btdevices.getCount() == 0) {
 					 btdevices.add(new BluetoothDeviceArr(getText(R.string.no_bt_devices).toString(), getText(R.string.no_bt_devices_desc).toString()));

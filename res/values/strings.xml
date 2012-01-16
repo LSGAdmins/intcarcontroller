@@ -16,7 +16,7 @@
     <string name="dismiss_changes">Mögliche Änderungen verwerfen?</string>
     <string name="loading">Lade&#8230;</string>
     <string name="reload_bluetooth">Bluetooth-Geräte neu laden</string>
-    <string name="scanning_for_bt_devices">Bluetoothgeräte werden gesucht</string>
+    <string name="scanning_for_bt_devices">BT-Suche</string>
     <string name="no_bt_devices">Keine Bluetoothgeräte</string>
     <string name="no_bt_devices_desc">Es wurden keine Bluetoothgeräte gefunden</string>
     <string name="no_bt_device_selected">Kein Bluetoothgerät</string>
