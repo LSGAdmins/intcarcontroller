@@ -108,6 +108,8 @@ public class SelectBTDevice extends ListActivity {
 		if (mBluetoothAdapter == null) {
 		    Log.d("intcar", "device does not support bluetooth. exiting.");
 		    Toast.makeText(this, R.string.no_bt_support, Toast.LENGTH_LONG).show();
+        	Intent intent = toSettings();
+        	startActivity(intent);
 		    finish();
 		}
 		else {
@@ -130,8 +132,8 @@ public class SelectBTDevice extends ListActivity {
 	            if (resultCode == Activity.RESULT_OK) {
 	                discoverDevices();
 	            } else {
-					 Intent intent = toSettings();
-					 startActivity(intent);
+	            	Intent intent = toSettings();
+	            	startActivity(intent);
 	                Toast.makeText(this, R.string.no_bt, Toast.LENGTH_SHORT).show();
 	                finish();
 	            }
