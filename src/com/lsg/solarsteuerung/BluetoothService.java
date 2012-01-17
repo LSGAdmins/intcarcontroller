@@ -1,5 +1,7 @@
 package com.lsg.solarsteuerung;
 
+import java.util.Date;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,12 +9,14 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.util.Log;
 
 public class BluetoothService extends Service {
 	//stuff for the calculation
@@ -159,13 +163,12 @@ public class BluetoothService extends Service {
 			//notification to jump back (especially when bluetooth connection is established)
 			String ns = Context.NOTIFICATION_SERVICE;
 			mNotificationManager = (NotificationManager) getSystemService(ns);
-			//notification to jump back (especially when bluetooth connection is established)
-			int icon = R.drawable.solarsteuerung;        // icon from resources
-			CharSequence tickerText = /*getText(R.string.app_name) + ": " +*/ device_name + " " + getText(R.string.running);
-			long when = System.currentTimeMillis();         // notification time
-			Context context = getApplicationContext();      // application Context
-			CharSequence contentTitle = getText(R.string.app_name);  // message title
-			CharSequence contentText = device_name + " " + getText(R.string.running);      // message text
+			//values
+			int icon = R.drawable.solarsteuerung;
+			CharSequence tickerText = device_name + " " + getText(R.string.running);
+			long when = System.currentTimeMillis();
+			CharSequence contentTitle = getText(R.string.app_name);
+			CharSequence contentText = device_name + " " + getText(R.string.running);
 			
 			Intent notificationIntent = new Intent(this, Orientation.class);
 			notificationIntent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
@@ -174,12 +177,30 @@ public class BluetoothService extends Service {
 			notificationIntent.putExtra("is_notified", true);
 			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			
-			// the next two lines initialize the Notification, using the configurations above
-			Notification notification = new Notification(icon, tickerText, when);
-			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-			notification.flags = Notification.FLAG_ONGOING_EVENT;
-			notification.defaults |= Notification.DEFAULT_SOUND;
-			mNotificationManager.notify((int) id, notification);
+			if(Build.VERSION.SDK_INT < 11) {
+				// the next two lines initialize the Notification, using the configurations above
+				Notification notification = new Notification(icon, tickerText, when);
+				notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+				notification.flags = Notification.FLAG_ONGOING_EVENT;
+				notification.defaults |= Notification.DEFAULT_SOUND;
+				mNotificationManager.notify((int) id, notification);
+			}
+			if(Build.VERSION.SDK_INT >= 11) {
+				Notification.Builder notification_builder = new Notification.Builder(this);
+				notification_builder.setContentText(contentText);
+				notification_builder.setContentTitle(contentTitle);
+				notification_builder.setContentIntent(contentIntent);
+				
+				Date date = new Date(when);
+				notification_builder.setContentInfo(getString(R.string.since) + " " + date.getHours() + ":" + date.getMinutes());
+				notification_builder.setTicker(tickerText);
+				notification_builder.setWhen(when);
+				notification_builder.setSmallIcon(icon);
+				notification_builder.setOngoing(true);
+				Notification notification = notification_builder.getNotification();
+				Log.d("asdf", "notify");
+				mNotificationManager.notify((int) id, notification);
+			}
 		}
 		is_notified = true;
 	}

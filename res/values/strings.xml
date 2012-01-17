@@ -6,6 +6,7 @@
     <string name="about_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
     <string name="help">Hilfe</string>
     <string name="help_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
+    <string name="since">Seit</string>
     <string name="running">läuft</string>
     <string name="add_device">Gerät hinzufügen</string>
     <string name="no_notification">Activity nicht über Notification aufgerufen!</string>
