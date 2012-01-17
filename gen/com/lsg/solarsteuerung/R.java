@@ -40,7 +40,7 @@ public final class R {
     }
     public static final class id {
         public static final int car_label=0x7f0a0013;
-        public static final int change_mode=0x7f0a001a;
+        public static final int change_mode_container=0x7f0a001a;
         public static final int device_BT_name=0x7f0a0007;
         public static final int device_control=0x7f0a0018;
         public static final int device_description=0x7f0a000c;

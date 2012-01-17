@@ -33,8 +33,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -164,6 +167,20 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
             	setScreen(screen_on_button.isChecked());
             }
         });
+        //on android with no actionbar display textview to switch mode
+        if(Build.VERSION.SDK_INT < 11) {
+        	Button change_mode = new Button(this);
+        	change_mode.setText(getString(R.string.change_mode));
+        	change_mode.setLayoutParams((new ViewGroup.LayoutParams(-1, -2)));
+        	change_mode.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					change_mode(v);
+				}
+			});
+        	LinearLayout container = (LinearLayout) findViewById(R.id.change_mode_container);
+        	container.addView(change_mode);
+        }
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
 	}

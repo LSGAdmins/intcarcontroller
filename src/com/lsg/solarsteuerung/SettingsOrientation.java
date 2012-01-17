@@ -36,7 +36,6 @@ public class SettingsOrientation extends PreferenceActivity {
 
             addPreferencesFromResource(R.xml.preferences_orientation);
     }
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();

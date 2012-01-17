@@ -115,12 +115,18 @@
                 android:textOn="@string/screen_alwaysON"
                 android:layout_weight="1"
                 android:textOff="@string/screen_goOFF"/>
+    </LinearLayout>
+    <LinearLayout 
+        android:id="@+id/change_mode_container"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent">
+        
     </LinearLayout>   
-            <Button
+           <!--<Button
                 android:id="@+id/change_mode"
                 android:layout_width="fill_parent"
                 android:text="@string/change_mode"
                 android:onClick="change_mode"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"/>
+                android:layout_marginTop="10dp"/>-->
 </TableLayout>

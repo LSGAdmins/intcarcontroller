@@ -2,6 +2,8 @@ package com.lsg.solarsteuerung;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 
@@ -41,4 +43,5 @@ public class HelperClass {
 		context.setTheme(theme);
 		Log.d("db_object.java", "setting theme");
 	}
+	
 }
