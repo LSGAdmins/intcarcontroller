@@ -92,8 +92,11 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	
 	//the sensormangager
 	private SensorManager mSensorManager;
+	//sensors for honeycomb and above
     private Sensor mag_sensor;
     private Sensor acc_sensor;
+    //sensor for gingerbread etc
+    private Sensor orient_sensor;
 	//some textviews to change content later
 	TextView x;
 	TextView y;
@@ -152,8 +155,12 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	    //sensors
 
 	    mSensorManager     = (SensorManager)getSystemService(SENSOR_SERVICE);
-        acc_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        mag_sensor  = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+	    if(Build.VERSION.SDK_INT >= 11) {
+	    	acc_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+	    	mag_sensor  = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+	    	}
+	    else
+	    	orient_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
         doBindService();
         
         device_control = (ToggleButton) findViewById(R.id.device_control);
@@ -196,6 +203,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	private boolean acc_ready = false;
 	@Override
 	public void onSensorChanged(SensorEvent event) {
+		//these two sensor are for ics devices
 		switch (event.sensor.getType()) {
 	    case Sensor.TYPE_MAGNETIC_FIELD:
 	        mag_values = event.values.clone();
@@ -232,8 +240,8 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 			sendData(info);
 			//the textviews with speed values are filled in the reply of the above message
 	        }
-
-		/*if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+	    //put this again in code to have better speed on gingerbread (cyonagenmod 7.2)
+	    if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
 			float[] values = event.values;
 			// Movement
 			float azimuth = values[0]; //degree to north
@@ -250,7 +258,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 			info.putInt(BluetoothService.act,     BluetoothService.sendOrientation);
 			sendData(info);
 			//the textviews with speed values are filled in the reply of the above message
-			}*/
+			}
 		}
 
 	@Override
@@ -265,10 +273,14 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 		//start service recording
 		pauseService(device_control.isChecked());
         //register sensorlistener
-		 mSensorManager.registerListener(this, acc_sensor, SensorManager.SENSOR_DELAY_NORMAL);
-		 mSensorManager.registerListener(this, mag_sensor,   SensorManager.SENSOR_DELAY_NORMAL);
-		 //screen wakelock
-		 setScreen(screen_on);
+		if(Build.VERSION.SDK_INT >= 11) {
+			mSensorManager.registerListener(this, acc_sensor, SensorManager.SENSOR_DELAY_NORMAL);
+			mSensorManager.registerListener(this, mag_sensor, SensorManager.SENSOR_DELAY_NORMAL);
+			}
+		else
+			mSensorManager.registerListener(this, orient_sensor, SensorManager.SENSOR_DELAY_NORMAL);
+		//screen wakelock
+		setScreen(screen_on);
 	}
 
 	@Override
