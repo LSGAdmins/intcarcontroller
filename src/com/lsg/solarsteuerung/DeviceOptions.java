@@ -34,7 +34,6 @@ public class DeviceOptions extends ListActivity{
 	        switch (info.getInt(BluetoothService.act, BluetoothService.nop)) {
 	        case BluetoothService.getCapabilities:
 	        	int [] capabilities = info.getIntArray(BluetoothService.capabilities);
-	        	Log.d("asdf", new Integer(capabilities[0]).toString());
 	        	int length = capabilities.length;
 	        	String[] options = new String[length];
 	        	int counter = 0;
@@ -84,6 +83,7 @@ public class DeviceOptions extends ListActivity{
 		 * hope that my Explanation is right :D */
 		serviceIntent.putExtra(HelperClass.DB_ROWID, id);
 		serviceIntent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
+		serviceIntent.putExtra(HelperClass.DB_DEVICE_MAC, BTDevice_mac);
 		serviceIntent.putExtra(BluetoothService.act, BluetoothService.sendInitData);
 		startService(serviceIntent);
 		if(bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE))
@@ -92,6 +92,7 @@ public class DeviceOptions extends ListActivity{
 	
 	public long id;
 	private String device_name;
+	private String BTDevice_mac;
 	private int caller;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -100,8 +101,9 @@ public class DeviceOptions extends ListActivity{
 	  Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
 		    id = extras.getLong(HelperClass.DB_ROWID);
-		    device_name = extras.getString(HelperClass.DB_DEVICE_NAME);
-		    caller = extras.getInt(HelperClass.caller);
+		    device_name  = extras.getString(HelperClass.DB_DEVICE_NAME);
+		    caller       = extras.getInt(HelperClass.caller);
+		    BTDevice_mac = extras.getString(HelperClass.DB_DEVICE_MAC);
 		    setTitle(device_name);
 		}
 		  
@@ -154,6 +156,7 @@ public class DeviceOptions extends ListActivity{
 	public void add_opts(Intent intent) {
 		intent.putExtra(HelperClass.DB_ROWID, DeviceOptions.this.id);
 		intent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
+		intent.putExtra(HelperClass.DB_DEVICE_MAC,  BTDevice_mac);
 		startActivity(intent);
 	}
 	@Override

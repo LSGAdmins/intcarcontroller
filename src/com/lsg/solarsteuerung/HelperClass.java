@@ -35,13 +35,10 @@ public class HelperClass {
 				theme = 0x0103006f;  //-> android.R.Theme_Holo_Dialog, needed, because build target is only 2.3.1
 		} else {
 			if(dialog) {
-				Log.d(TAG, "else");
 				theme = android.R.style.Theme_Dialog;
 			}
 		}
-		Log.d(TAG, new Integer(theme).toString());
 		context.setTheme(theme);
-		Log.d("db_object.java", "setting theme");
 	}
 	
 }

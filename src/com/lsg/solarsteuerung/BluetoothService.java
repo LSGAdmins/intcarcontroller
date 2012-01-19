@@ -1,11 +1,18 @@
 package com.lsg.solarsteuerung;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
+import java.util.UUID;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +24,7 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 public class BluetoothService extends Service {
 	//stuff for the calculation
@@ -67,7 +75,10 @@ public class BluetoothService extends Service {
 	//notification
 	private NotificationManager mNotificationManager;
 	private boolean is_notified = false;
-	private String device_name = null;
+	private String device_name;
+	private String BTDevice_mac;
+	//bluetooth
+	private BluetoothAdapter BTAdapter;
 	
 	public void setId(long _id) {
 		this.id = _id;
@@ -93,9 +104,10 @@ public class BluetoothService extends Service {
 		this.middle_steering            = (int)((this.max_steering-this.min_steering)/2)+this.min_steering;
 	}
 	public int[] getValues (float roll, float pitch) {
-		if(this.fortyfive_angle)
+		if(this.fortyfive_angle) {
 			roll -= 40;
 			roll *= 2;
+		}
 		if(pitch < this.dead_angle_steering && pitch > -this.dead_angle_steering) {
 			pitch = 0; //dead angle
 		}
@@ -105,7 +117,7 @@ public class BluetoothService extends Service {
 			else
 				pitch += this.dead_angle_steering; //remove dead angle
 		}
-		//same again for steering
+		//same again for speed
 		if(roll < this.dead_angle_speed && roll > -this.dead_angle_speed) {
 			roll = 0;
 		}
@@ -145,6 +157,7 @@ public class BluetoothService extends Service {
     @Override
     public void onCreate() {
         mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        BTAdapter            = BluetoothAdapter.getDefaultAdapter();
     }
     
     @Override
@@ -173,7 +186,7 @@ public class BluetoothService extends Service {
 			Intent notificationIntent = new Intent(this, Orientation.class);
 			notificationIntent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
 			notificationIntent.putExtra(HelperClass.DB_ROWID, id);
-			notificationIntent.putExtra(HelperClass.DB_ROWID, id);
+			notificationIntent.putExtra(HelperClass.DB_DEVICE_MAC, BTDevice_mac);
 			notificationIntent.putExtra("is_notified", true);
 			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			
@@ -198,7 +211,6 @@ public class BluetoothService extends Service {
 				notification_builder.setSmallIcon(icon);
 				notification_builder.setOngoing(true);
 				Notification notification = notification_builder.getNotification();
-				Log.d("asdf", "notify");
 				mNotificationManager.notify((int) id, notification);
 			}
 		}
@@ -237,6 +249,7 @@ public class BluetoothService extends Service {
             	break;
             case DEVICE_CONTROL:
             	device_control = data.getBoolean(DEVICE_CONTROL_KEY);
+            	Log.d("device_control", new Boolean(device_control).toString());
             	getPrefs(); //update preferences, e.g. if last activity was preferences NOTE this is not the optimum, i think this call is done much to often
             	break;
             case nop:
@@ -265,6 +278,7 @@ public class BluetoothService extends Service {
         }
     }
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	ConnectThread mConn;
 	@Override
 	  public int onStartCommand(Intent intent, int flags, int startId) {
 		try { //Nullpointerexception is sometimes raised by following line, don't know why
@@ -272,8 +286,30 @@ public class BluetoothService extends Service {
 			if(extras.getLong(HelperClass.DB_ROWID) != id) { //device with another id? -> init; also place where bluetooth should be inited
 				stopNotification();
 				setId(extras.getLong(HelperClass.DB_ROWID));
-				device_name = extras.getString(HelperClass.DB_DEVICE_NAME);
+				device_name  = extras.getString(HelperClass.DB_DEVICE_NAME);
 				notify_running();
+				
+				BTDevice_mac = extras.getString(HelperClass.DB_DEVICE_MAC);
+				if(BTDevice_mac == null || BTDevice_mac.length() != 17)
+					Toast.makeText(this, getString(R.string.no_valid_bt_device), Toast.LENGTH_LONG).show();
+				Log.d("mac", BTDevice_mac);
+				Log.d("device_name", device_name);
+				//stop BT Threads if running
+				if(mConn != null) {
+					mConn.cancel();
+					mConn = null;
+					Log.d("asdf", "cancel");
+				}
+				if(mConnected != null) {
+					mConnected.cancel();
+					mConnected = null;
+				}
+		        // Start the thread to connect with the given device
+				try {
+					BluetoothDevice device = BTAdapter.getRemoteDevice(BTDevice_mac);
+			        mConn = new ConnectThread(device);
+			        mConn.start();
+				} catch(Exception e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); }
 				}
 			if(!is_notified)
 				notify_running();
@@ -282,4 +318,115 @@ public class BluetoothService extends Service {
 		}
 		return START_STICKY;
 	  }
+	
+	
+	//thread to connect - hope this works
+	private class ConnectThread extends Thread {
+	    private final BluetoothSocket mmSocket;
+	    private final BluetoothDevice mmDevice;
+	 
+	    public ConnectThread(BluetoothDevice device) {
+	    	Log.d("connectthread", "constructor");
+	        // Use a temporary object that is later assigned to mmSocket,
+	        // because mmSocket is final
+	        BluetoothSocket tmp = null;
+	        mmDevice = device;
+	 
+	        // Get a BluetoothSocket to connect with the given BluetoothDevice
+	        try {
+	            // MY_UUID is the app's UUID string, also used by the server code
+	            tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66"));
+	        } catch (IOException e) { }
+	        mmSocket = tmp;
+	    }
+	 
+	    public void run() {
+	    	Log.d("connectthread", "run");
+	        // Cancel discovery because it will slow down the connection
+	        BTAdapter.cancelDiscovery();
+	 
+	        try {
+	            // Connect the device through the socket. This will block
+	            // until it succeeds or throws an exception
+	            mmSocket.connect();
+	        } catch (IOException connectException) {
+	            // Unable to connect; close the socket and get out
+	            try {
+	                mmSocket.close();
+	            } catch (IOException closeException) { }
+	            return;
+	        }
+	 
+	        // Do work to manage the connection (in a separate thread)
+	        connected(mmSocket);
+	    }
+	    /** Will cancel an in-progress connection, and close the socket */
+	    public void cancel() {
+	        try {
+	            mmSocket.close();
+	        } catch (IOException e) { }
+	    }
+	}
+	//connected !!!
+	private ConnectedThread mConnected;
+	public synchronized void connected(BluetoothSocket socket) {
+		mConn.cancel();
+		mConnected = new ConnectedThread(socket);
+		mConnected.start();
+	}
+	//thread that is called when BT Device is connected
+	private class ConnectedThread extends Thread {
+	    private final BluetoothSocket mmSocket;
+	    private final InputStream mmInStream;
+	    private final OutputStream mmOutStream;
+	 
+	    public ConnectedThread(BluetoothSocket socket) {
+	        mmSocket = socket;
+	        InputStream tmpIn = null;
+	        OutputStream tmpOut = null;
+	 
+	        // Get the input and output streams, using temp objects because
+	        // member streams are final
+	        try {
+	            tmpIn = socket.getInputStream();
+	            tmpOut = socket.getOutputStream();
+	        } catch (IOException e) { }
+	 
+	        mmInStream = tmpIn;
+	        mmOutStream = tmpOut;
+	    }
+	 
+	    public void run() {
+	        byte[] buffer = new byte[1024];  // buffer store for the stream
+	        int bytes; // bytes returned from read()
+	 
+	        // Keep listening to the InputStream until an exception occurs
+	        while (true) {
+	            try {
+	                // Read from the InputStream
+	                bytes = mmInStream.read(buffer);
+	                // Send the obtained bytes to the UI Activity
+	                Toast.makeText(BluetoothService.this, buffer.toString(), Toast.LENGTH_SHORT).show();
+	                /*mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
+	                        .sendToTarget();*/
+	            } catch (IOException e) {
+	                break;
+	            }
+	        }
+	    }
+	 
+	    /* Call this from the main Activity to send data to the remote device */
+	    public void write(byte[] bytes) {
+	        try {
+	            mmOutStream.write(bytes);
+	        } catch (IOException e) { }
+	    }
+	 
+	    /* Call this from the main Activity to shutdown the connection */
+	    public void cancel() {
+	        try {
+	            mmSocket.close();
+	        } catch (IOException e) { }
+	    }
+	}
 }

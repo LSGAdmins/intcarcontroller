@@ -85,14 +85,15 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	
 	private long id; //id of device
 	private String device_name; //name of device
+	private String BTDevice_mac;
 	private WakeLock wakelock;
 	private boolean screen_on = true;
 	private final String WAKELOCK = "WAKELOCK";
 	
 	//the sensormangager
 	private SensorManager mSensorManager;
-    private Sensor orientation_sensor;
-    private Sensor proximity_sensor;
+    private Sensor mag_sensor;
+    private Sensor acc_sensor;
 	//some textviews to change content later
 	TextView x;
 	TextView y;
@@ -101,6 +102,8 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	TextView speed;
 	
 	ToggleButton device_control;
+	
+	public String rad;
 	
 	//gestures
 	private GestureLibrary gestLib;
@@ -116,7 +119,9 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
         HelperClass.setTheme(false, this);
         
 		super.onCreate(savedInstanceState);
-
+		
+		rad = getString(R.string.rad);
+		
 		GestureOverlayView gestureOverlayView = new GestureOverlayView(this);
 		View inflate = getLayoutInflater().inflate(R.layout.orientation, null);
 		gestureOverlayView.addView(inflate);
@@ -132,6 +137,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 		if (extras != null) {
 		    id = extras.getLong(HelperClass.DB_ROWID);
 		    device_name = extras.getString(HelperClass.DB_DEVICE_NAME);
+		    BTDevice_mac = extras.getString(HelperClass.DB_DEVICE_MAC);
 		    TextView car_label = (TextView) findViewById(R.id.car_label);
 		    car_label.setText(device_name);
 		    setTitle(device_name); //useless
@@ -146,8 +152,8 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	    //sensors
 
 	    mSensorManager     = (SensorManager)getSystemService(SENSOR_SERVICE);
-        orientation_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-        proximity_sensor  = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        acc_sensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mag_sensor  = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         doBindService();
         
         device_control = (ToggleButton) findViewById(R.id.device_control);
@@ -184,10 +190,50 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
 	}
-
+	private float[] acc_values;
+	private float[] mag_values;
+	private boolean mag_ready = false;
+	private boolean acc_ready = false;
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+		switch (event.sensor.getType()) {
+	    case Sensor.TYPE_MAGNETIC_FIELD:
+	        mag_values = event.values.clone();
+	        mag_ready = true;
+	        break;
+	    case Sensor.TYPE_ACCELEROMETER:
+	        acc_values = event.values.clone();
+	        acc_ready = true;
+	    }   
+
+	    if (mag_values != null && acc_values != null && mag_ready && acc_ready) {
+	        mag_ready = false;
+	        acc_ready = false;
+
+	        float[] R = new float[16];
+	        float[] I = new float[16];
+
+	        SensorManager.getRotationMatrix(R, I, this.acc_values, this.mag_values);
+
+	        float[] orientation = new float[3];
+	        SensorManager.getOrientation(R, orientation);
+			float azimuth = orientation[0]; //degree to north
+			float pitch = orientation[1];
+			float roll = orientation[2];
+			//set values in text views
+			Orientation.this.x.setText(new Float(azimuth).toString() + " " + rad);
+			Orientation.this.y.setText(new Float(pitch).toString()   + " " + rad);
+			Orientation.this.z.setText(new Float(roll).toString()    + " " + rad);
+			//Message -> send data to service
+			Bundle info = new Bundle();
+			info.putFloat(BluetoothService.pitch, (pitch*(180/3.14F)));
+			info.putFloat(BluetoothService.roll,  (roll*(180/3.14F)));
+			info.putInt(BluetoothService.act,     BluetoothService.sendOrientation);
+			sendData(info);
+			//the textviews with speed values are filled in the reply of the above message
+	        }
+
+		/*if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
 			float[] values = event.values;
 			// Movement
 			float azimuth = values[0]; //degree to north
@@ -204,15 +250,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 			info.putInt(BluetoothService.act,     BluetoothService.sendOrientation);
 			sendData(info);
 			//the textviews with speed values are filled in the reply of the above message
-			}
-		if(event.sensor.getType() == Sensor.TYPE_PROXIMITY && !android.os.Build.MODEL.equals("google_sdk")) {
-			if(event.values[0] == 1.0F) {
-				//no proximity
-				}
-			else {
-				//proximity
-				}
-			}
+			}*/
 		}
 
 	@Override
@@ -223,12 +261,12 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 
 	@Override
 	protected void onResume() {
+		super.onResume();
 		//start service recording
 		pauseService(device_control.isChecked());
-		super.onResume();
         //register sensorlistener
-		 mSensorManager.registerListener(this, orientation_sensor, SensorManager.SENSOR_DELAY_NORMAL);
-		 mSensorManager.registerListener(this, proximity_sensor,   SensorManager.SENSOR_DELAY_NORMAL);
+		 mSensorManager.registerListener(this, acc_sensor, SensorManager.SENSOR_DELAY_NORMAL);
+		 mSensorManager.registerListener(this, mag_sensor,   SensorManager.SENSOR_DELAY_NORMAL);
 		 //screen wakelock
 		 setScreen(screen_on);
 	}
@@ -328,6 +366,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 		 * hope that my Explanation is right :D */
 		serviceIntent.putExtra(HelperClass.DB_ROWID, id);
 		serviceIntent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
+		serviceIntent.putExtra(HelperClass.DB_DEVICE_MAC, BTDevice_mac);
 		serviceIntent.putExtra(BluetoothService.act, BluetoothService.sendInitData);
 		startService(serviceIntent);
 		if(bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE))

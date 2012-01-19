@@ -101,12 +101,14 @@ public class Solarsteuerung extends ListActivity {
 			Cursor o = (Cursor) this.getListAdapter().getItem(position);
 			Intent intent = new Intent(Solarsteuerung.this, DeviceOptions.class);
 			intent.putExtra(HelperClass.DB_ROWID, o.getLong(0)); // übergebe aktuelle ID
-			Cursor result = myDB.query(HelperClass.DB_TABLE, new String [] {HelperClass.DB_DEVICE_NAME}, HelperClass.DB_ROWID+" = ?",
+			Cursor result = myDB.query(HelperClass.DB_TABLE, new String [] {HelperClass.DB_DEVICE_NAME, HelperClass.DB_DEVICE_MAC}, HelperClass.DB_ROWID+" = ?",
 					new String [] {new Long(id).toString()}, null, null, null);
 			result.moveToFirst();
 			startManagingCursor(result);
-			String device_name = result.getString(result.getColumnIndex(HelperClass.DB_DEVICE_NAME));
+			String device_name  = result.getString(result.getColumnIndex(HelperClass.DB_DEVICE_NAME));
+			String BTDevice_mac = result.getString(result.getColumnIndex(HelperClass.DB_DEVICE_MAC));
 			intent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
+			intent.putExtra(HelperClass.DB_DEVICE_MAC, BTDevice_mac);
 			startActivity(intent);
 		}
 		else {
