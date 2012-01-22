@@ -11,7 +11,6 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,6 +41,9 @@ public class DeviceOptions extends ListActivity{
 	        		counter++;
 	        	}
 	    	  DeviceOptions.this.setListAdapter(new ArrayAdapter<String>(DeviceOptions.this, R.layout.list_item, options));
+	        	break;
+	        case BluetoothService.connected:
+	        	boolean connected = info.getBoolean(BluetoothService.connect_state); //don't know what to do...
 	        	break;
 	            default:
 	                super.handleMessage(msg);
@@ -163,7 +165,7 @@ public class DeviceOptions extends ListActivity{
 	protected void onDestroy() {
 	    super.onDestroy();
 	    if (service_bound) {
-	    	if (mService != null) {
+	    	if(mService != null) {
 	    		try {
 	    			Message msg = Message.obtain(null, BluetoothService.unregister);
 	    			mService.send(msg);

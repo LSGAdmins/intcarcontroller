@@ -44,7 +44,9 @@ import android.widget.ToggleButton;
 public class Orientation extends Activity implements SensorEventListener, OnGesturePerformedListener {
 
 	private boolean service_bound;
+	private boolean connected;
 	Messenger mService = null;
+	private int[] caps;
 	
 	class IncomingHandler extends Handler {
 	    @Override
@@ -55,8 +57,27 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 				Orientation.this.speed.setText(new Integer(info.getInt(BluetoothService.speed)).toString());
 				Orientation.this.steering.setText(new Integer(info.getInt(BluetoothService.steering)).toString());
 	        	break;
+	        case BluetoothService.getCapabilities:
+	        	int [] capabilities = info.getIntArray(BluetoothService.capabilities);
+	        	caps = capabilities;
+	        	if(Build.VERSION.SDK_INT >= 11)
+	        		HelperClass.makeNavigation(capabilities, Orientation.this);
+	        	break;
+	        case BluetoothService.connected:
+	        	connected = info.getBoolean(BluetoothService.connect_state);
+	        	TextView conn = (TextView) findViewById(R.id.connected);
+	        	if(connected) {
+	        		conn.setText(R.string.connected);
+	        		conn.setTextColor(getResources().getColor(R.color.darkgreen));
+	        	}
+	        	else {
+	        		conn.setText(getString(R.string.not_connected));
+	        		conn.setTextColor(getResources().getColor(R.color.darkred));
+	        	}
+	        	Log.d("connected", new Boolean(connected).toString());
+	        	break;
 	            default:
-	            	Log.d(HelperClass.TAG, "unhandled data");
+	            	Log.d("asdf", "unhandled data");
 	                super.handleMessage(msg);
 	        }
 	    }
@@ -71,6 +92,10 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	        	Message msg = new Message();
 	        	msg = Message.obtain(null, BluetoothService.register);
 	        	msg.replyTo = mMessenger;
+	        	mService.send(msg);
+	        	msg = Message.obtain(null, BluetoothService.getCapabilities, null);
+	        	mService.send(msg );
+	        	msg = Message.obtain(null, BluetoothService.connected, null);
 	        	mService.send(msg);
 	        } catch(RemoteException e) {
 	        	
@@ -186,16 +211,16 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
         	change_mode.setText(getString(R.string.change_mode));
         	change_mode.setLayoutParams((new ViewGroup.LayoutParams(-1, -2)));
         	change_mode.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					change_mode(v);
-				}
-			});
+        		@Override
+        		public void onClick(View v) {
+        			change_mode(v);
+        			}
+        		});
         	LinearLayout container = (LinearLayout) findViewById(R.id.change_mode_container);
         	container.addView(change_mode);
-        }
-		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
+        	}
+    	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+    	wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
 	}
 	private float[] acc_values;
 	private float[] mag_values;
@@ -297,7 +322,17 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	public boolean onCreateOptionsMenu(Menu menu) {
 	    MenuInflater inflater = getMenuInflater();
 	    inflater.inflate(R.menu.orientation, menu);
+	    if(Build.VERSION.SDK_INT < 11) {
+	    	menu.add(0, android.R.id.home, Menu.NONE, "Home").setIcon(android.R.drawable.ic_menu_revert);
+	    }
 	    return true;
+	}
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+	    if(connected) {
+	    	menu.removeItem(R.id.connect_BT);
+	    }
+		return true;
 	}
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -307,11 +342,15 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	    switch (item.getItemId()) {
         case android.R.id.home:
             // app icon in action bar clicked; change mode
-        	change_mode(null);
+        	startActivity(homeIntent);
+        	finish();
             return true;
-	    case R.id.orientation_home:
-	        startActivity(homeIntent);
-	        finish();
+	    case R.id.connect_BT:
+	        Message msg_en = new Message();
+	        msg_en = Message.obtain(null, BluetoothService.connect, null);
+	        try {
+	        	mService.send(msg_en);
+	        } catch(RemoteException e) {}
 	        return true;
 	    case R.id.stop_service:
     		try {

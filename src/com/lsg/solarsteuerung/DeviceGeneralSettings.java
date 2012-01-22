@@ -1,5 +1,6 @@
 package com.lsg.solarsteuerung;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
@@ -7,9 +8,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -28,6 +31,10 @@ public class DeviceGeneralSettings extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		HelperClass.setTheme(false, this);
+		//ActionBar
+		if(Build.VERSION.SDK_INT >= 11) {
+		    HelperClass.displayUp(this);
+		}
 		setContentView(R.layout.device_general_settings);
 		Bundle extras = getIntent().getExtras(); 
 		if (extras != null) {
@@ -141,23 +148,36 @@ public class DeviceGeneralSettings extends Activity {
 	 @Override
 	 public boolean onKeyDown(int keyCode, KeyEvent event) {
 		 if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-			 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-				 @Override
-				 public void onClick(DialogInterface dialog, int which) {
-				        switch (which){
-				        case DialogInterface.BUTTON_POSITIVE:
-				        	finish();
-				            break;
-				        }
-				    }
-				};
-			  AlertDialog.Builder builder = new AlertDialog.Builder(this);
-				builder.setMessage(this.getString(R.string.dismiss_changes))
-				.setPositiveButton(this.getString(R.string.yes), dialogClickListener)
-				.setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
-				return true;
+			 dismiss_dialog();
+			 return true;
 			 }
 		 else
 			 return super.onKeyDown(keyCode, event);
 		 }
+	 @Override
+	 public boolean onOptionsItemSelected(MenuItem item) {
+	     switch (item.getItemId()) {
+	         case android.R.id.home:
+	             dismiss_dialog();
+	             return true;
+	         default:
+	             return super.onOptionsItemSelected(item);
+	     }
+	 }
+	 public void dismiss_dialog() {
+		 DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+			 @Override
+			 public void onClick(DialogInterface dialog, int which) {
+			        switch (which){
+			        case DialogInterface.BUTTON_POSITIVE:
+			        	finish();
+			            break;
+			        }
+			    }
+			};
+		  AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage(this.getString(R.string.dismiss_changes))
+			.setPositiveButton(this.getString(R.string.yes), dialogClickListener)
+			.setNegativeButton(this.getString(R.string.no), dialogClickListener).show();
+	 }
 }

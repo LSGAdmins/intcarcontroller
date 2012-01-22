@@ -3,7 +3,7 @@ package com.lsg.solarsteuerung;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import android.app.Notification;
@@ -49,6 +49,9 @@ public class BluetoothService extends Service {
 	int     middle_speed;
 	int     middle_steering;
 	boolean fortyfive_angle;
+	
+	int speed_current;
+	int steering_current;
 	//stuff for service
 	private Messenger replytoMessenger;
 	//actions: human readable ints and act-Strings
@@ -59,6 +62,7 @@ public class BluetoothService extends Service {
 	public static final String steering           = "steering";
 	public static final String DEVICE_CONTROL_KEY = "device_control";
 	public static final String capabilities       = "capabilities";
+	public static final String connect_state      = "connect_state";
 	
 	public static final int    nop             = 0;
 	public static final int    sendInitData    = 1;
@@ -66,12 +70,15 @@ public class BluetoothService extends Service {
 	public static final int    sendValues      = 3;
 	public static final int    DEVICE_CONTROL  = 4;
 	public static final int    getCapabilities = 5;
+	public static final int    connected       = 6;
+	public static final int    connect         = 7;
 	//register / unregister / exit
 	public static final int    register        = 100;
 	public static final int    unregister      = 101;
 	public static final int    exit            = 103;
 	//device capabilities
 	public static final int    orientation_sensor = 1;
+	private ArrayList<Integer> caps = new ArrayList<Integer>();
 	//notification
 	private NotificationManager mNotificationManager;
 	private boolean is_notified = false;
@@ -79,6 +86,7 @@ public class BluetoothService extends Service {
 	private String BTDevice_mac;
 	//bluetooth
 	private BluetoothAdapter BTAdapter;
+	private boolean BT_connected = false;
 	
 	public void setId(long _id) {
 		this.id = _id;
@@ -102,6 +110,8 @@ public class BluetoothService extends Service {
 		
 		this.middle_speed               = (int)((this.max_speed-this.min_speed)/2)+this.min_speed;
 		this.middle_steering            = (int)((this.max_steering-this.min_steering)/2)+this.min_steering;
+		speed_current    = middle_speed;
+		steering_current = middle_steering;
 	}
 	public int[] getValues (float roll, float pitch) {
 		if(this.fortyfive_angle) {
@@ -148,9 +158,13 @@ public class BluetoothService extends Service {
 			steering = this.max_steering;
 		//int returnval[];
 		if(!(device_control)) {
+			speed_current    = middle_speed;
+			steering_current = middle_steering;
 			return(new int[] {middle_speed, middle_steering});
 		}
 		else {
+			speed_current    = speed;
+			steering_current = steering;
 			return(new int[] {speed, steering});
 		}
 	}
@@ -169,10 +183,26 @@ public class BluetoothService extends Service {
     	//messenger to get messages
         return mMessenger.getBinder();
     }
+    public void sendBTState() {
+		try {
+			Message remsg = new Message();
+			Bundle data2 = new Bundle();
+			data2.putInt(act, BluetoothService.connected);
+			data2.putBoolean(connect_state, BT_connected);
+			remsg.setData(data2);
+			replytoMessenger.send(remsg);
+		} catch(Exception e) {}
+    }
     
-	private void notify_running() {
+	private void notify_running(boolean connected) {
+		if(is_notified) {
+			stopNotification();
+			is_notified = false;
+		}
+		BT_connected = connected;
+		
+		sendBTState();
 		if(!is_notified) {
-			//orientation.this.mNotificationManager.cancelAll();
 			//notification to jump back (especially when bluetooth connection is established)
 			String ns = Context.NOTIFICATION_SERVICE;
 			mNotificationManager = (NotificationManager) getSystemService(ns);
@@ -199,13 +229,19 @@ public class BluetoothService extends Service {
 				mNotificationManager.notify((int) id, notification);
 			}
 			if(Build.VERSION.SDK_INT >= 11) {
+				String infotext;
+				if(connected)
+					infotext = getString(R.string.connected);
+				else
+					infotext = getString(R.string.not_connected);
 				Notification.Builder notification_builder = new Notification.Builder(this);
 				notification_builder.setContentText(contentText);
 				notification_builder.setContentTitle(contentTitle);
 				notification_builder.setContentIntent(contentIntent);
 				
-				Date date = new Date(when);
-				notification_builder.setContentInfo(getString(R.string.since) + " " + date.getHours() + ":" + date.getMinutes());
+				//Date date = new Date(when);
+				//notification_builder.setContentInfo(getString(R.string.since) + " " + date.getHours() + ":" + date.getMinutes());
+				notification_builder.setContentInfo(infotext);
 				notification_builder.setTicker(tickerText);
 				notification_builder.setWhen(when);
 				notification_builder.setSmallIcon(icon);
@@ -220,6 +256,8 @@ public class BluetoothService extends Service {
 		if(is_notified) {
 			int _id = (int) id;
 			mNotificationManager.cancel(_id);
+			if(mConnected != null)
+				mConnected.cancel();
 		}
 		is_notified = false;
 	}
@@ -250,12 +288,13 @@ public class BluetoothService extends Service {
             case DEVICE_CONTROL:
             	device_control = data.getBoolean(DEVICE_CONTROL_KEY);
             	Log.d("device_control", new Boolean(device_control).toString());
-            	getPrefs(); //update preferences, e.g. if last activity was preferences NOTE this is not the optimum, i think this call is done much to often
+            	getPrefs(); //update preferences
             	break;
             case nop:
             	default:
-            		if(msg.what == register)
+            		if(msg.what == register) {
             			replytoMessenger = msg.replyTo;
+            		}
             		if(msg.what == unregister)
             			device_control = false;
             		if(msg.what == exit) {
@@ -263,31 +302,58 @@ public class BluetoothService extends Service {
             			stopSelf();
             		}
             		if(msg.what == getCapabilities) {
-            			try {
-            				int [] device_capabilities = {R.string.sensor}; //this int [] should contain all the actions supportet by the device -> bluetooth
-            				Bundle info = new Bundle();
-            				info.putInt(act, getCapabilities);
-            				info.putIntArray(capabilities, device_capabilities);
-            				Message msgback = new Message();
-            				msgback.setData(info);
-            				replytoMessenger.send(msgback);
-            			} catch(Exception e) {}
+            			sendCaps();
             		}
+            		if(msg.what == connected)
+            			sendBTState();
+            		if(msg.what == connect)
+            			connectBT();
                     super.handleMessage(msg);
             }
         }
     }
+	public void sendCaps() {
+		int i           = 0;
+		int caps_send[];
+		if(caps.size() > 0) {
+			caps_send = new int[caps.size()];
+			while(i < caps.size()) {
+				caps_send[i] = caps.get(i);
+				Log.d("capi", new Integer(caps.get(i)).toString());
+				i++;
+				}
+		}
+		else {
+			caps_send = new int[1];
+			caps_send[0] = R.string.sensor;
+		}
+		int [] device_capabilities = caps_send;
+		Bundle info = new Bundle();
+		info.putInt(act, getCapabilities);
+		info.putIntArray(capabilities, device_capabilities);
+		Message msgback = new Message();
+		msgback.setData(info);
+		try{
+			replytoMessenger.send(msgback);
+		} catch(RemoteException e) {}
+	}
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
 	ConnectThread mConn;
+	ConnectedThread mConnected;
+	private BluetoothAdapter mBT;
+	public void enableBT() {
+		mBT.enable();
+	}
 	@Override
 	  public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.d("asdf", "onstart");
 		try { //Nullpointerexception is sometimes raised by following line, don't know why
-			Bundle extras = intent.getExtras(); //hope that this Bundle one day also contains bluetooth device name
-			if(extras.getLong(HelperClass.DB_ROWID) != id) { //device with another id? -> init; also place where bluetooth should be inited
+			Bundle extras = intent.getExtras();
+			if(extras.getLong(HelperClass.DB_ROWID) != id) { //device with another id? -> init; also place where bluetooth is inited
+				Log.d(new Long(id).toString(), new Long(extras.getLong(HelperClass.DB_ROWID)).toString());
 				stopNotification();
 				setId(extras.getLong(HelperClass.DB_ROWID));
 				device_name  = extras.getString(HelperClass.DB_DEVICE_NAME);
-				notify_running();
 				
 				BTDevice_mac = extras.getString(HelperClass.DB_DEVICE_MAC);
 				if(BTDevice_mac == null || BTDevice_mac.length() != 17)
@@ -298,45 +364,53 @@ public class BluetoothService extends Service {
 				if(mConn != null) {
 					mConn.cancel();
 					mConn = null;
-					Log.d("asdf", "cancel");
 				}
 				if(mConnected != null) {
 					mConnected.cancel();
 					mConnected = null;
 				}
+				if(BTAdapter == null)
+					stopSelf();
+				else{
+					if(!BTAdapter.isEnabled()) {
+						Intent btIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+						btIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+						startActivity(btIntent);
+					}
+				}
 		        // Start the thread to connect with the given device
 				try {
-					BluetoothDevice device = BTAdapter.getRemoteDevice(BTDevice_mac);
-			        mConn = new ConnectThread(device);
-			        mConn.start();
+					connectBT();
 				} catch(Exception e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); }
 				}
-			if(!is_notified)
-				notify_running();
+			notify_running(BT_connected);
 		} catch(Exception e) {
 			//Can't Log Exception because Exception doesn't have a Message :D
 		}
 		return START_STICKY;
 	  }
 	
+	public void connectBT() {
+		Log.d("intcar", "connectBT");
+		BluetoothDevice BTDevice = BTAdapter.getRemoteDevice(BTDevice_mac);
+        mConn = new ConnectThread(BTDevice);
+        mConn.start();
+	}
 	
 	//thread to connect - hope this works
 	private class ConnectThread extends Thread {
 	    private final BluetoothSocket mmSocket;
-	    private final BluetoothDevice mmDevice;
 	 
 	    public ConnectThread(BluetoothDevice device) {
 	    	Log.d("connectthread", "constructor");
 	        // Use a temporary object that is later assigned to mmSocket,
 	        // because mmSocket is final
 	        BluetoothSocket tmp = null;
-	        mmDevice = device;
 	 
 	        // Get a BluetoothSocket to connect with the given BluetoothDevice
 	        try {
-	            // MY_UUID is the app's UUID string, also used by the server code
-	            tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66"));
-	        } catch (IOException e) { }
+	            tmp = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));
+	        } catch (IOException e) { Log.d("connect", e.getMessage()); }
 	        mmSocket = tmp;
 	    }
 	 
@@ -350,6 +424,8 @@ public class BluetoothService extends Service {
 	            // until it succeeds or throws an exception
 	            mmSocket.connect();
 	        } catch (IOException connectException) {
+	        	Log.d("except", connectException.getMessage());
+	        	connectException.printStackTrace();
 	            // Unable to connect; close the socket and get out
 	            try {
 	                mmSocket.close();
@@ -358,7 +434,9 @@ public class BluetoothService extends Service {
 	        }
 	 
 	        // Do work to manage the connection (in a separate thread)
-	        connected(mmSocket);
+	        Log.d("tag", "starting connect");
+	        mConnected = new ConnectedThread(mmSocket);
+	        mConnected.start();
 	    }
 	    /** Will cancel an in-progress connection, and close the socket */
 	    public void cancel() {
@@ -366,13 +444,6 @@ public class BluetoothService extends Service {
 	            mmSocket.close();
 	        } catch (IOException e) { }
 	    }
-	}
-	//connected !!!
-	private ConnectedThread mConnected;
-	public synchronized void connected(BluetoothSocket socket) {
-		mConn.cancel();
-		mConnected = new ConnectedThread(socket);
-		mConnected.start();
 	}
 	//thread that is called when BT Device is connected
 	private class ConnectedThread extends Thread {
@@ -384,37 +455,92 @@ public class BluetoothService extends Service {
 	        mmSocket = socket;
 	        InputStream tmpIn = null;
 	        OutputStream tmpOut = null;
-	 
 	        // Get the input and output streams, using temp objects because
 	        // member streams are final
 	        try {
 	            tmpIn = socket.getInputStream();
 	            tmpOut = socket.getOutputStream();
-	        } catch (IOException e) { }
+	        } catch (IOException e) {}
 	 
 	        mmInStream = tmpIn;
 	        mmOutStream = tmpOut;
+	        notify_running(true);
 	    }
 	 
 	    public void run() {
-	        byte[] buffer = new byte[1024];  // buffer store for the stream
-	        int bytes; // bytes returned from read()
-	 
-	        // Keep listening to the InputStream until an exception occurs
 	        while (true) {
 	            try {
-	                // Read from the InputStream
-	                bytes = mmInStream.read(buffer);
-	                // Send the obtained bytes to the UI Activity
-	                Toast.makeText(BluetoothService.this, buffer.toString(), Toast.LENGTH_SHORT).show();
-	                /*mHandler.obtainMessage(MESSAGE_READ, bytes, -1, buffer)
-	                        .sendToTarget();*/
+	            	//read one byte
+	            	int data = mmInStream.read();
+	                switch(data) {
+	                case 48: //send capabilities
+	                	read_capabilities();
+	                	break;
+	                case 49:
+	                	send_values();
+	                	break;
+	                	default:
+	                		Log.d("unhandled byte", new Integer(data).toString());
+	                }
 	            } catch (IOException e) {
+	            	Log.d("IOException", e.getMessage());
+	            	notify_running(false);
+	            	connectBT();
 	                break;
 	            }
 	        }
 	    }
-	 
+	    public void send_values() {
+	    	byte[] data = new byte[8];
+	    	data[0] = (byte) '\n';
+	    	data[1] = (byte) '\r';
+	    	data[2] = (byte) 101;
+	    	data[3] = (byte) (speed_current-100);
+	    	data[4] = (byte) 102;
+	    	data[5] = (byte) (steering_current-100);
+	    	data[6] = (byte) '\n';
+	    	data[7] = (byte) '\r';
+	    	this.write(data);
+	    }
+	    public void read_capabilities() {
+	    	byte[] send = new byte[1];
+	    	send[0] = (byte) 123;
+	    	this.write(send);
+	    	int data = 0;
+	    	while(data != 27) {
+	    		try {
+	    			data = mmInStream.read();
+	    			byte[] data_send = new byte[1];
+	    			data_send[0] = (byte) data;
+	    			this.write(data_send);
+	    			int string = 0;
+	    			boolean init = false;
+	    			switch(data) {
+	    			case 97:
+	    				string = R.string.sensor;
+	    				init = true;
+	    				break;
+	    			case 115:
+	    				string = R.string.draw;
+	    				init = true;
+	    				break;
+	    			case 101:
+	    				caps.clear();
+	    				break;
+	    				default:
+	    	    			Log.d("cap", new Integer(data).toString());
+	    					break;
+	    			}
+	    			if(init && !caps.contains(string)) {
+	    				caps.add(string);
+	    				
+	    				sendCaps();
+	    			}
+	    		} catch(IOException e) {}
+	    	}
+	    	send[0] = (byte) 125;
+	    	this.write(send);	
+	    }
 	    /* Call this from the main Activity to send data to the remote device */
 	    public void write(byte[] bytes) {
 	        try {

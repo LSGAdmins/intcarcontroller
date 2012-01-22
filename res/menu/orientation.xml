@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- no need to display the first item in actionbar because it's already provided there -->
-    <item android:id="@+id/orientation_home"
-          android:icon="@drawable/android:ic_menu_revert"
-          android:title="@string/home" />
+    <item android:id="@+id/connect_BT"
+          android:icon="@drawable/android:ic_menu_rotate"
+          android:title="@string/connect_BT" />
     <item android:id="@+id/stop_service"
           android:icon="@drawable/android:ic_lock_power_off"
           android:title="@string/stop_service"

@@ -156,9 +156,6 @@ public class Solarsteuerung extends ListActivity {
 		Intent homeIntent = new Intent(this, Solarsteuerung.class);
 	    // Handle item selection
 	    switch (item.getItemId()) {
-	    case R.id.orientation_home:
-	        startActivity(homeIntent);
-	        return true;
 	    case R.id.solarsteuerung_help:
 	    	Intent help = new Intent(this, HelpAbout.class);
 	    	help.putExtra(HelperClass.helpabout, HelperClass.help);

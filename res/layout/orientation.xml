@@ -62,6 +62,13 @@
             android:textSize="9pt"
             android:padding="3dip"
             android:textColor="@color/darkblue" />
+        <TextView
+            android:id="@+id/connected"
+            android:text="@string/not_connected"
+            android:gravity="right"
+            android:textSize="9pt"
+            android:padding="3dip"
+            android:textColor="@color/darkred" />
     </TableRow>
    
     <TableRow>

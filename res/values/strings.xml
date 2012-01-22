@@ -15,11 +15,15 @@
     <string name="really_delete_device">Sind sie sicher, dass sie das Gerät aus der Liste entfernen wollen?</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
+    <string name="enable_BT">Bluetooth aktivieren?</string>
     <string name="dismiss_changes">Mögliche Änderungen verwerfen?</string>
     <string name="loading">Lade&#8230;</string>
     <string name="reload_bluetooth">Bluetooth-Geräte neu laden</string>
     <string name="scanning_for_bt_devices">BT-Suche</string>
     <string name="no_bt_devices">Keine Bluetoothgeräte</string>
+    <string name="connected">Verbunden</string>
+    <string name="not_connected">Nicht verbunden</string>
+    <string name="connect_BT">Bluetooth verbinden</string>
     <string name="no_valid_bt_device">Kein gültiges Bluetoothgerät angegeben:</string>
     <string name="no_bt_devices_desc">Es wurden keine Bluetoothgeräte gefunden</string>
     <string name="no_bt_device_selected">Kein Bluetoothgerät</string>
