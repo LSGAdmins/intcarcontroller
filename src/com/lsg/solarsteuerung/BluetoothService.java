@@ -123,7 +123,7 @@ public class BluetoothService extends Service {
 	}
 	public int[] getValues (float roll, float pitch) {
 		if(this.fortyfive_angle) {
-			roll -= 40;
+			roll += 45;
 			roll *= 2;
 		}
 		if(pitch < this.dead_angle_steering && pitch > -this.dead_angle_steering) {

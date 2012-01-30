@@ -282,7 +282,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 			// Movement
 			float azimuth = values[0]; //degree to north
 			float pitch = values[1];
-			float roll = values[2];
+			float roll = values[2] * (-1);
 			//set values in text views
 			Orientation.this.x.setText(new Float(azimuth).toString()+"°");
 			Orientation.this.y.setText(new Float(pitch).toString()+"°");
