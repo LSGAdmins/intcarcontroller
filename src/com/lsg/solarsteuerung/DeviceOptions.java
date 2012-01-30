@@ -43,7 +43,7 @@ public class DeviceOptions extends ListActivity{
 	    	  DeviceOptions.this.setListAdapter(new ArrayAdapter<String>(DeviceOptions.this, R.layout.list_item, options));
 	        	break;
 	        case BluetoothService.connected:
-	        	boolean connected = info.getBoolean(BluetoothService.connect_state); //don't know what to do...
+	        	int connected = info.getInt(BluetoothService.connect_state); //don't know what to do...
 	        	break;
 	            default:
 	                super.handleMessage(msg);
@@ -53,7 +53,8 @@ public class DeviceOptions extends ListActivity{
 	
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
 	private ServiceConnection mConnection = new ServiceConnection() {
-	    public void onServiceConnected(ComponentName className,
+	    @Override
+		public void onServiceConnected(ComponentName className,
 	            IBinder service) {
 	        mService = new Messenger(service);
 	        try {
@@ -68,7 +69,8 @@ public class DeviceOptions extends ListActivity{
 	        }
 	    }
 
-	    public void onServiceDisconnected(ComponentName className) {
+	    @Override
+		public void onServiceDisconnected(ComponentName className) {
 	    	//service disconnected
 	        mService = null;
 	    }
@@ -118,7 +120,8 @@ public class DeviceOptions extends ListActivity{
 	  lv.setTextFilterEnabled(true);
 
 	  lv.setOnItemClickListener(new OnItemClickListener() {
-	    public void onItemClick(AdapterView<?> parent, View view,
+	    @Override
+		public void onItemClick(AdapterView<?> parent, View view,
 	        int position, long id) {
 	    	if(((TextView) view).getText() == DeviceOptions.this.getString(R.string.draw))
 	    	{

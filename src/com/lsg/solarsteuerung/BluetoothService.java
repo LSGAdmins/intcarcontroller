@@ -13,8 +13,10 @@ import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +29,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class BluetoothService extends Service {
+	private final static String TAG = "BluetoothService";
 	//stuff for the calculation
 	private String PREFERENCES;
 	private long id;
@@ -85,8 +88,13 @@ public class BluetoothService extends Service {
 	private String device_name;
 	private String BTDevice_mac;
 	//bluetooth
+	public static final int BT_OFF           = 0;
+	public static final int BT_CONNECTED     = 1;
+	public static final int BT_NOT_CONNECTED = 2;
 	private BluetoothAdapter BTAdapter;
-	private boolean BT_connected = false;
+	private int BTState;
+	private int BTConnectionState;
+	private BroadcastReceiver receiver;
 	
 	public void setId(long _id) {
 		this.id = _id;
@@ -176,6 +184,7 @@ public class BluetoothService extends Service {
     
     @Override
     public void onDestroy() {
+    	unregisterReceiver(receiver);
         stopNotification();
     }
     @Override
@@ -188,76 +197,73 @@ public class BluetoothService extends Service {
 			Message remsg = new Message();
 			Bundle data2 = new Bundle();
 			data2.putInt(act, BluetoothService.connected);
-			data2.putBoolean(connect_state, BT_connected);
+			data2.putInt(connect_state, BTConnectionState);
 			remsg.setData(data2);
 			replytoMessenger.send(remsg);
 		} catch(Exception e) {}
     }
     
-	private void notify_running(boolean connected) {
-		if(is_notified) {
-			stopNotification();
-			is_notified = false;
-		}
-		BT_connected = connected;
-		
+	private void notify_running() {
+		if(is_notified)
+			mNotificationManager.cancel((int) id);
 		sendBTState();
-		if(!is_notified) {
-			//notification to jump back (especially when bluetooth connection is established)
-			String ns = Context.NOTIFICATION_SERVICE;
-			mNotificationManager = (NotificationManager) getSystemService(ns);
-			//values
-			int icon = R.drawable.solarsteuerung;
-			CharSequence tickerText = device_name + " " + getText(R.string.running);
-			long when = System.currentTimeMillis();
-			CharSequence contentTitle = getText(R.string.app_name);
-			CharSequence contentText = device_name + " " + getText(R.string.running);
-			
-			Intent notificationIntent = new Intent(this, Orientation.class);
-			notificationIntent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
-			notificationIntent.putExtra(HelperClass.DB_ROWID, id);
-			notificationIntent.putExtra(HelperClass.DB_DEVICE_MAC, BTDevice_mac);
-			notificationIntent.putExtra("is_notified", true);
-			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-			
-			if(Build.VERSION.SDK_INT < 11) {
-				// the next two lines initialize the Notification, using the configurations above
-				Notification notification = new Notification(icon, tickerText, when);
-				notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
-				notification.flags = Notification.FLAG_ONGOING_EVENT;
-				notification.defaults |= Notification.DEFAULT_SOUND;
-				mNotificationManager.notify((int) id, notification);
+		String infotext;
+		switch(BTConnectionState) {
+		case BT_CONNECTED:
+			infotext = getString(R.string.connected);
+			break;
+		case BT_NOT_CONNECTED:
+			infotext = getString(R.string.not_connected);
+			break;
+			default:
+				infotext = getString(R.string.bt_disabled);
+				}
+		
+		//notification to jump back (especially when bluetooth connection is established)
+		String ns = Context.NOTIFICATION_SERVICE;
+		mNotificationManager = (NotificationManager) getSystemService(ns);
+		//values
+		int icon = R.drawable.solarsteuerung;
+		CharSequence tickerText = device_name + " " + getText(R.string.running)+": " + infotext;
+		long when = System.currentTimeMillis();
+		CharSequence contentTitle = getText(R.string.app_name);
+		CharSequence contentText = device_name + " " + getText(R.string.running);
+		Intent notificationIntent = new Intent(this, Orientation.class);
+		notificationIntent.putExtra(HelperClass.DB_DEVICE_NAME, device_name);
+		notificationIntent.putExtra(HelperClass.DB_ROWID, id);
+		notificationIntent.putExtra(HelperClass.DB_DEVICE_MAC, BTDevice_mac);
+		notificationIntent.putExtra("is_notified", true);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);	
+		
+		if(Build.VERSION.SDK_INT < 11) {
+			// the next two lines initialize the Notification, using the configurations above
+			Notification notification = new Notification(icon, tickerText, when);
+			notification.setLatestEventInfo(this, contentTitle, contentText, contentIntent);
+			notification.flags = Notification.FLAG_ONGOING_EVENT;
+			notification.defaults |= Notification.DEFAULT_SOUND;
+			mNotificationManager.notify((int) id, notification);
 			}
-			if(Build.VERSION.SDK_INT >= 11) {
-				String infotext;
-				if(connected)
-					infotext = getString(R.string.connected);
-				else
-					infotext = getString(R.string.not_connected);
-				Notification.Builder notification_builder = new Notification.Builder(this);
-				notification_builder.setContentText(contentText);
-				notification_builder.setContentTitle(contentTitle);
-				notification_builder.setContentIntent(contentIntent);
-				
-				//Date date = new Date(when);
-				//notification_builder.setContentInfo(getString(R.string.since) + " " + date.getHours() + ":" + date.getMinutes());
-				notification_builder.setContentInfo(infotext);
-				notification_builder.setTicker(tickerText);
-				notification_builder.setWhen(when);
-				notification_builder.setSmallIcon(icon);
-				notification_builder.setOngoing(true);
-				Notification notification = notification_builder.getNotification();
-				mNotificationManager.notify((int) id, notification);
+		if(Build.VERSION.SDK_INT >= 11) {
+			Notification.Builder notification_builder = new Notification.Builder(this);
+			notification_builder.setContentText(contentText);
+			notification_builder.setContentTitle(contentTitle);
+			notification_builder.setContentIntent(contentIntent);
+			notification_builder.setContentInfo(infotext);
+			notification_builder.setTicker(tickerText);
+			notification_builder.setWhen(when);
+			notification_builder.setSmallIcon(icon);
+			notification_builder.setOngoing(true);
+			Notification notification = notification_builder.getNotification();
+			mNotificationManager.notify((int) id, notification);
 			}
-		}
 		is_notified = true;
 	}
 	private void stopNotification() {
 		if(is_notified) {
 			int _id = (int) id;
 			mNotificationManager.cancel(_id);
-			if(mConnected != null)
-				mConnected.cancel();
+			/*if(mConnected != null)
+				mConnected.cancel();*/
 		}
 		is_notified = false;
 	}
@@ -344,22 +350,62 @@ public class BluetoothService extends Service {
 	public void enableBT() {
 		mBT.enable();
 	}
+	public void setBTConnState() {
+		int previous_state = BTConnectionState;
+		switch(BTState) {
+		case BluetoothAdapter.STATE_CONNECTED:
+			BTConnectionState = BT_CONNECTED;
+			break;
+		case BluetoothAdapter.STATE_CONNECTING:
+		case BluetoothAdapter.STATE_DISCONNECTED:
+		case BluetoothAdapter.STATE_DISCONNECTING:
+		case BluetoothAdapter.STATE_ON:
+		case BluetoothAdapter.STATE_TURNING_ON:
+			BTConnectionState = BT_NOT_CONNECTED;
+			break;
+			default:
+				BTConnectionState = BT_OFF;
+				}
+		if(!BTAdapter.isEnabled()) //BT is set to STATE_DISCONNECTED -> need this
+			BTConnectionState = BT_OFF;
+		/*if(BTAdapter.isEnabled() && BTConnectionState == BT_OFF) //happens on cm 7.2, don't know why...
+			BTConnectionState = BT_NOT_CONNECTED;*/
+		if(previous_state != BTConnectionState) {
+			notify_running();
+			Log.d("BTState", new Integer(BTConnectionState).toString());
+		}
+		Log.d("BT", new Integer(BTState).toString());
+	}
 	@Override
 	  public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d("asdf", "onstart");
+		IntentFilter filter = new IntentFilter(); //intent filter
+		filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); //add connection to device state to filter
+		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); //add BT state to filter
+		receiver = (new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Bundle extras = intent.getExtras();
+				if(intent.getAction() == BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED) {
+					BTState = extras.getInt(BluetoothAdapter.ACTION_STATE_CHANGED);
+				}
+				if(intent.getAction() == BluetoothAdapter.ACTION_STATE_CHANGED) {
+					BTState = extras.getInt(BluetoothAdapter.ACTION_STATE_CHANGED);
+					}
+				setBTConnState();
+			}
+			});
+		registerReceiver(receiver, filter);
 		try { //Nullpointerexception is sometimes raised by following line, don't know why
 			Bundle extras = intent.getExtras();
 			if(extras.getLong(HelperClass.DB_ROWID) != id) { //device with another id? -> init; also place where bluetooth is inited
-				Log.d(new Long(id).toString(), new Long(extras.getLong(HelperClass.DB_ROWID)).toString());
-				stopNotification();
 				setId(extras.getLong(HelperClass.DB_ROWID));
 				device_name  = extras.getString(HelperClass.DB_DEVICE_NAME);
 				
 				BTDevice_mac = extras.getString(HelperClass.DB_DEVICE_MAC);
 				if(BTDevice_mac == null || BTDevice_mac.length() != 17)
 					Toast.makeText(this, getString(R.string.no_valid_bt_device), Toast.LENGTH_LONG).show();
-				Log.d("mac", BTDevice_mac);
-				Log.d("device_name", device_name);
+				Log.d(TAG, "MAC: " + BTDevice_mac);
+				Log.d(TAG, "Device Name: " + device_name);
 				//stop BT Threads if running
 				if(mConn != null) {
 					mConn.cancel();
@@ -371,19 +417,14 @@ public class BluetoothService extends Service {
 				}
 				if(BTAdapter == null)
 					stopSelf();
-				else{
-					if(!BTAdapter.isEnabled()) {
-						Intent btIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-						btIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-						startActivity(btIntent);
-					}
-				}
 		        // Start the thread to connect with the given device
 				try {
 					connectBT();
 				} catch(Exception e) { Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show(); }
+				BTState = BTAdapter.getState();
+				setBTConnState();
+				notify_running();
 				}
-			notify_running(BT_connected);
 		} catch(Exception e) {
 			//Can't Log Exception because Exception doesn't have a Message :D
 		}
@@ -464,7 +505,7 @@ public class BluetoothService extends Service {
 	 
 	        mmInStream = tmpIn;
 	        mmOutStream = tmpOut;
-	        notify_running(true);
+	        notify_running();
 	    }
 	 
 	    public void run() {
@@ -484,7 +525,7 @@ public class BluetoothService extends Service {
 	                }
 	            } catch (IOException e) {
 	            	Log.d("IOException", e.getMessage());
-	            	notify_running(false);
+	            	//TODO notify_running(BT_NO_CONNECT);
 	            	connectBT();
 	                break;
 	            }

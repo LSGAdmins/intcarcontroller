@@ -3,6 +3,7 @@ package com.lsg.solarsteuerung;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -44,9 +45,11 @@ import android.widget.ToggleButton;
 public class Orientation extends Activity implements SensorEventListener, OnGesturePerformedListener {
 
 	private boolean service_bound;
-	private boolean connected;
+	private int connected;
 	Messenger mService = null;
 	private int[] caps;
+	private BluetoothAdapter mBT;
+	private Menu optionsMenu;
 	
 	class IncomingHandler extends Handler {
 	    @Override
@@ -64,17 +67,24 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	        		HelperClass.makeNavigation(capabilities, Orientation.this);
 	        	break;
 	        case BluetoothService.connected:
-	        	connected = info.getBoolean(BluetoothService.connect_state);
+	        	connected = info.getInt(BluetoothService.connect_state);
+	        	Log.d("connected", new Integer(connected).toString());
 	        	TextView conn = (TextView) findViewById(R.id.connected);
-	        	if(connected) {
+	        	if(connected == BluetoothService.BT_CONNECTED) {
 	        		conn.setText(R.string.connected);
 	        		conn.setTextColor(getResources().getColor(R.color.darkgreen));
 	        	}
 	        	else {
-	        		conn.setText(getString(R.string.not_connected));
-	        		conn.setTextColor(getResources().getColor(R.color.darkred));
+	        		if(connected == BluetoothService.BT_NOT_CONNECTED) {
+	        			conn.setText(getString(R.string.not_connected));
+	        			conn.setTextColor(getResources().getColor(R.color.darkorange));
+	        		}
+	        		else {
+	        			conn.setText(getString(R.string.bt_disabled));
+	        			conn.setTextColor(getResources().getColor(R.color.darkred));
+	        		}
 	        	}
-	        	Log.d("connected", new Boolean(connected).toString());
+	        	Log.d("connected", new Integer(connected).toString());
 	        	break;
 	            default:
 	            	Log.d("asdf", "unhandled data");
@@ -221,6 +231,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
         	}
     	PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
     	wakelock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, WAKELOCK);
+    	mBT = BluetoothAdapter.getDefaultAdapter();
 	}
 	private float[] acc_values;
 	private float[] mag_values;
@@ -325,13 +336,28 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	    if(Build.VERSION.SDK_INT < 11) {
 	    	menu.add(0, android.R.id.home, Menu.NONE, "Home").setIcon(android.R.drawable.ic_menu_revert);
 	    }
+	    optionsMenu = menu;
 	    return true;
 	}
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-	    if(connected) {
+    	menu.removeItem(R.id.connect_BT);
+    	menu.removeItem(R.id.enable_BT);
+    	menu.removeItem(R.id.disable_BT);
+	    if(connected == BluetoothService.BT_CONNECTED) {
 	    	menu.removeItem(R.id.connect_BT);
+	    	menu.removeItem(R.id.enable_BT);
 	    }
+	    if(connected == BluetoothService.BT_OFF) {
+	    	menu.removeItem(R.id.connect_BT);
+	    	menu.add(0, R.id.enable_BT, Menu.NONE, getString(R.string.enable_BT)).setIcon(android.R.drawable.ic_menu_mylocation);
+	    }
+	    if(connected == BluetoothService.BT_NOT_CONNECTED) {
+	    	menu.removeItem(R.id.enable_BT);
+	    	menu.add(0, R.id.connect_BT, Menu.NONE, getString(R.string.connect_BT)).setIcon(android.R.drawable.ic_menu_rotate);
+	    }
+	    if(connected == BluetoothService.BT_NOT_CONNECTED || connected == BluetoothService.BT_CONNECTED)
+	    	menu.add(0, R.id.disable_BT, Menu.NONE, getString(R.string.disable_BT)).setIcon(android.R.drawable.ic_menu_close_clear_cancel);
 		return true;
 	}
 	@Override
@@ -352,6 +378,12 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	        	mService.send(msg_en);
 	        } catch(RemoteException e) {}
 	        return true;
+	    case R.id.enable_BT:
+	    	mBT.enable();
+	    	return true;
+	    case R.id.disable_BT:
+	    	mBT.disable();
+	    	return true;
 	    case R.id.stop_service:
     		try {
     			Message msg = Message.obtain(null, BluetoothService.exit);
