@@ -33,7 +33,7 @@ public class DeviceGeneralSettings extends Activity {
 		HelperClass.setTheme(false, this);
 		//ActionBar
 		if(Build.VERSION.SDK_INT >= 11) {
-		    HelperClass.displayUp(this);
+		    HoneyCombAbove.displayUp(this);
 		}
 		setContentView(R.layout.device_general_settings);
 		Bundle extras = getIntent().getExtras(); 

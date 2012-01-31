@@ -301,10 +301,11 @@ public class BluetoothService extends Service {
             		if(msg.what == register) {
             			replytoMessenger = msg.replyTo;
             		}
-            		if(msg.what == unregister)
+            		if(msg.what == unregister) {
             			device_control = false;
+            		}
             		if(msg.what == exit) {
-            			stopNotification();//seems that stopself() is not enough
+            			//stopNotification();//seems that stopself() is not enough
             			stopSelf();
             		}
             		if(msg.what == getCapabilities) {

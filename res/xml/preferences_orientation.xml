@@ -9,6 +9,7 @@
                         android:key="fortyfive_angle" />
         </PreferenceCategory>
         <PreferenceCategory
+                android:key="speed_category"
                 android:title="@+string/speed">
                  <ListPreference
                         android:title="@+string/speed_slope"
@@ -49,6 +50,7 @@
                         android:key="min_speed" />
         </PreferenceCategory>
         <PreferenceCategory
+            	android:key="steering_category"
                 android:title="@+string/steering">
                  <ListPreference
                         android:title="@+string/steering_slope"

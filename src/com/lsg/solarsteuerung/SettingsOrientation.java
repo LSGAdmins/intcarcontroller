@@ -3,7 +3,10 @@ package com.lsg.solarsteuerung;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,6 +38,16 @@ public class SettingsOrientation extends PreferenceActivity {
             prefMgr.setSharedPreferencesMode(MODE_PRIVATE);
 
             addPreferencesFromResource(R.xml.preferences_orientation);
+            EditTextPreference max_speed = (EditTextPreference) findPreference("max_speed");
+            EditTextPreference min_speed = (EditTextPreference) findPreference("min_speed");
+            PreferenceCategory speed_category = (PreferenceCategory) findPreference("speed_category");
+            speed_category.removePreference(max_speed);
+            speed_category.removePreference(min_speed);
+            EditTextPreference max_steering = (EditTextPreference) findPreference("max_steering");
+            EditTextPreference min_steering = (EditTextPreference) findPreference("min_steering");
+            PreferenceCategory steering_category = (PreferenceCategory) findPreference("steering_category");
+            steering_category.removePreference(max_steering);
+            steering_category.removePreference(min_steering);
     }
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

@@ -40,6 +40,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class Orientation extends Activity implements SensorEventListener, OnGesturePerformedListener {
@@ -49,7 +50,6 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	Messenger mService = null;
 	private int[] caps;
 	private BluetoothAdapter mBT;
-	private Menu optionsMenu;
 	
 	class IncomingHandler extends Handler {
 	    @Override
@@ -64,7 +64,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	        	int [] capabilities = info.getIntArray(BluetoothService.capabilities);
 	        	caps = capabilities;
 	        	if(Build.VERSION.SDK_INT >= 11)
-	        		HelperClass.makeNavigation(capabilities, Orientation.this);
+	        		HoneyCombAbove.makeNavigation(capabilities, Orientation.this);
 	        	break;
 	        case BluetoothService.connected:
 	        	connected = info.getInt(BluetoothService.connect_state);
@@ -282,7 +282,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 			// Movement
 			float azimuth = values[0]; //degree to north
 			float pitch = values[1];
-			float roll = values[2] * (-1);
+			float roll = values[2] * (-1); //for historical reasons, this value hast just the other sign -> turn around
 			//set values in text views
 			Orientation.this.x.setText(new Float(azimuth).toString()+"°");
 			Orientation.this.y.setText(new Float(pitch).toString()+"°");
@@ -336,7 +336,6 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	    if(Build.VERSION.SDK_INT < 11) {
 	    	menu.add(0, android.R.id.home, Menu.NONE, "Home").setIcon(android.R.drawable.ic_menu_revert);
 	    }
-	    optionsMenu = menu;
 	    return true;
 	}
 	@Override
@@ -369,9 +368,11 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
         case android.R.id.home:
             // app icon in action bar clicked; change mode
         	startActivity(homeIntent);
+        	Toast.makeText(this, "home", Toast.LENGTH_LONG).show();
         	finish();
             return true;
 	    case R.id.connect_BT:
+        	Toast.makeText(this, "connect bt", Toast.LENGTH_LONG).show();
 	        Message msg_en = new Message();
 	        msg_en = Message.obtain(null, BluetoothService.connect, null);
 	        try {
@@ -379,12 +380,15 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	        } catch(RemoteException e) {}
 	        return true;
 	    case R.id.enable_BT:
+        	Toast.makeText(this, "enable bt", Toast.LENGTH_LONG).show();
 	    	mBT.enable();
 	    	return true;
 	    case R.id.disable_BT:
+        	Toast.makeText(this, "disable bt", Toast.LENGTH_LONG).show();
 	    	mBT.disable();
 	    	return true;
 	    case R.id.stop_service:
+        	Toast.makeText(this, "stop service", Toast.LENGTH_LONG).show();
     		try {
     			Message msg = Message.obtain(null, BluetoothService.exit);
     			mService.send(msg);
@@ -396,6 +400,7 @@ public class Orientation extends Activity implements SensorEventListener, OnGest
 	        finish();
 	        return true;
 	    case R.id.orientation_settings:
+        	Toast.makeText(this, "settings", Toast.LENGTH_LONG).show();
 			settings();
 	    	return true;
 	    default:
