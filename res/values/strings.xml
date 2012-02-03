@@ -3,7 +3,7 @@
     <string name="app_version">0.1</string>
     <string name="home">Home</string>
     <string name="about">Über</string>
-    <string name="about_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
+    <string name="about_text">Diese App wurde im Rahmen des Wettbewerbs "" von Oliver Fröhling, Paul Thiele und Maximilian Mühlbauer entwickelt.</string>
     <string name="help">Hilfe</string>
     <string name="help_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
     <string name="since">Seit</string>
@@ -83,4 +83,6 @@
     <string name="dead_angle_steering_summary"></string>
     <string name="dead_angle_speed">Toter Winkel für Geschwindigkeit</string>
     <string name="dead_angle_speed_summary"></string>
+    <string name="use_precise">Verwende genauere Steuerung</string>
+    <string name="use_precise_summary">Achtung! Diese Option funktioniert noch nicht.</string>
 </resources>

@@ -7,6 +7,11 @@
                         android:defaultValue="false"
                         android:summary="@+string/fortyfive_angle_summary"
                         android:key="fortyfive_angle" />
+                <CheckBoxPreference
+                        android:title="@+string/use_precise"
+                        android:defaultValue="false"
+                        android:summary="@+string/use_precise_summary"
+                        android:key="use_precise" />
         </PreferenceCategory>
         <PreferenceCategory
                 android:key="speed_category"

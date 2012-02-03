@@ -52,9 +52,12 @@ public class BluetoothService extends Service {
 	int     middle_speed;
 	int     middle_steering;
 	boolean fortyfive_angle;
+	boolean use_precise;
 	
 	int speed_current;
 	int steering_current;
+	int speed_angle;
+	int steering_angle;
 	//stuff for service
 	private Messenger replytoMessenger;
 	//actions: human readable ints and act-Strings
@@ -118,8 +121,9 @@ public class BluetoothService extends Service {
 		
 		this.middle_speed               = (int)((this.max_speed-this.min_speed)/2)+this.min_speed;
 		this.middle_steering            = (int)((this.max_steering-this.min_steering)/2)+this.min_steering;
-		speed_current    = middle_speed;
-		steering_current = middle_steering;
+		speed_current                   = middle_speed;
+		steering_current                = middle_steering;
+		use_precise                     = settings.getBoolean("use_precise", false);
 	}
 	public int[] getValues (float roll, float pitch) {
 		if(this.fortyfive_angle) {
@@ -145,13 +149,31 @@ public class BluetoothService extends Service {
 			else
 				roll += this.dead_angle_speed;
 		}
-		int speed = (int)(roll * ((this.max_speed-this.min_speed)/80)*this.multiplicator_speed);
-		int steering = (int)(pitch * ((this.max_steering-this.min_steering)/80)*this.multiplicator_steering);
+		
 		
 		if(this.reverse_pwm_speed)
-			speed *= -1;
+			roll *= -1;
 		if(this.reverse_pwm_steering)
-			steering *= -1;
+			pitch *= -1;
+		
+		roll  *= multiplicator_speed;
+		pitch *= multiplicator_steering;
+		
+		/*ungenaue steuerung*/
+		speed_angle    = (int) (roll / 7.5) + 109;
+		steering_angle = (int) (pitch / 7.5) + 77;
+		if(speed_angle > 119)
+			speed_angle = 119;
+		if(speed_angle < 99)
+			speed_angle = 99;
+		if(steering_angle > 87)
+			steering_angle = 87;
+		if(steering_angle < 67)
+			steering_angle = 67;
+		/*ende ungenau*/
+		
+		int speed    = (int) (roll *  (this.max_speed-this.min_speed)/80);
+		int steering = (int) (pitch * (this.max_steering-this.min_steering)/80);
 		
 		speed    += this.middle_speed;
 		steering += this.middle_steering;
@@ -164,16 +186,25 @@ public class BluetoothService extends Service {
 			steering = this.min_steering;
 		if(steering > this.max_steering)
 			steering = this.max_steering;
-		//int returnval[];
+
 		if(!(device_control)) {
+			speed_angle      = 109;
+			steering_angle   = 77;
+			
 			speed_current    = middle_speed;
 			steering_current = middle_steering;
-			return(new int[] {middle_speed, middle_steering});
+			if(use_precise)
+				return(new int[] {middle_speed, middle_steering});
+			else
+				return(new int[] {speed_angle, steering_angle});
 		}
 		else {
 			speed_current    = speed;
 			steering_current = steering;
-			return(new int[] {speed, steering});
+			if(use_precise)
+				return(new int[] {speed, steering});
+			else
+				return(new int[] {speed_angle, steering_angle});
 		}
 	}
     @Override
@@ -347,6 +378,7 @@ public class BluetoothService extends Service {
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
 	ConnectThread mConn;
 	ConnectedThread mConnected;
+	DataThread mData;
 	private BluetoothAdapter mBT;
 	public void enableBT() {
 		mBT.enable();
@@ -369,8 +401,6 @@ public class BluetoothService extends Service {
 				}
 		if(!BTAdapter.isEnabled()) //BT is set to STATE_DISCONNECTED -> need this
 			BTConnectionState = BT_OFF;
-		/*if(BTAdapter.isEnabled() && BTConnectionState == BT_OFF) //happens on cm 7.2, don't know why...
-			BTConnectionState = BT_NOT_CONNECTED;*/
 		if(previous_state != BTConnectionState) {
 			notify_running();
 			Log.d("BTState", new Integer(BTConnectionState).toString());
@@ -382,6 +412,7 @@ public class BluetoothService extends Service {
 		IntentFilter filter = new IntentFilter(); //intent filter
 		filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED); //add connection to device state to filter
 		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED); //add BT state to filter
+		filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED); //device connection for gingerbread
 		receiver = (new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -392,6 +423,22 @@ public class BluetoothService extends Service {
 				if(intent.getAction() == BluetoothAdapter.ACTION_STATE_CHANGED) {
 					BTState = extras.getInt(BluetoothAdapter.ACTION_STATE_CHANGED);
 					}
+				if(intent.getAction() == BluetoothDevice.ACTION_BOND_STATE_CHANGED) {
+					//switch to values of api 11
+					switch(extras.getInt(BluetoothDevice.EXTRA_BOND_STATE)) {
+					case BluetoothDevice.BOND_BONDED:
+						BTState = BluetoothAdapter.STATE_CONNECTED;
+						break;
+					case BluetoothDevice.BOND_BONDING:
+					case BluetoothDevice.BOND_NONE:
+						BTState = BluetoothAdapter.STATE_DISCONNECTED;
+						break;
+						default:
+							break;
+					}
+					Log.d("connstate", new Integer(extras.getInt(BluetoothDevice.EXTRA_BOND_STATE)).toString());
+					BTState = extras.getInt(BluetoothDevice.EXTRA_BOND_STATE);
+				}
 				setBTConnState();
 			}
 			});
@@ -416,6 +463,9 @@ public class BluetoothService extends Service {
 					mConnected.cancel();
 					mConnected = null;
 				}
+				if(mData != null) {
+					mData = null;
+				}
 				if(BTAdapter == null)
 					stopSelf();
 		        // Start the thread to connect with the given device
@@ -437,6 +487,15 @@ public class BluetoothService extends Service {
 		BluetoothDevice BTDevice = BTAdapter.getRemoteDevice(BTDevice_mac);
         mConn = new ConnectThread(BTDevice);
         mConn.start();
+	}
+	
+	private class DataThread extends Thread {
+		public void run() {
+			mConnected.send_values();
+			try {
+				Thread.sleep(20);
+			} catch(Exception e) {}
+		}
 	}
 	
 	//thread to connect - hope this works
@@ -479,6 +538,8 @@ public class BluetoothService extends Service {
 	        Log.d("tag", "starting connect");
 	        mConnected = new ConnectedThread(mmSocket);
 	        mConnected.start();
+	        mData = new DataThread();
+	        mData.start();
 	    }
 	    /** Will cancel an in-progress connection, and close the socket */
 	    public void cancel() {
@@ -526,23 +587,25 @@ public class BluetoothService extends Service {
 	                }
 	            } catch (IOException e) {
 	            	Log.d("IOException", e.getMessage());
-	            	//TODO notify_running(BT_NO_CONNECT);
 	            	connectBT();
 	                break;
 	            }
 	        }
 	    }
 	    public void send_values() {
-	    	byte[] data = new byte[8];
-	    	data[0] = (byte) '\n';
-	    	data[1] = (byte) '\r';
-	    	data[2] = (byte) 101;
-	    	data[3] = (byte) (speed_current-100);
-	    	data[4] = (byte) 102;
-	    	data[5] = (byte) (steering_current-100);
-	    	data[6] = (byte) '\n';
-	    	data[7] = (byte) '\r';
-	    	this.write(data);
+	    	if(use_precise) {
+	    		byte[] data = new byte[4];
+	    		data[0] = (byte) 102;
+	    		data[1] = (byte) (speed_current-99);
+	    		data[2] = (byte) 103;
+	    		data[3] = (byte) (steering_current-99);
+	    	}
+	    	else { //ungenau
+	    		byte [] data = new byte[2];
+	    		data[0] = (byte) speed_angle;
+	    		data[1] = (byte) steering_angle;
+	    		this.write(data);
+	    	}
 	    }
 	    public void read_capabilities() {
 	    	byte[] send = new byte[1];

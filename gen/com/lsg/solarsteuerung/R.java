@@ -180,6 +180,8 @@ public final class R {
         public static final int steering_slope_summary=0x7f080044;
         public static final int stop_service=0x7f080022;
         public static final int thanks=0x7f080038;
+        public static final int use_precise=0x7f080053;
+        public static final int use_precise_summary=0x7f080054;
         public static final int yes=0x7f08000d;
     }
     public static final class xml {
