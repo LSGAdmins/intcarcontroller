@@ -3,9 +3,11 @@ package com.lsg.solarsteuerung;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 
 public class HelpAbout extends Activity {
 	@Override
@@ -40,5 +42,9 @@ public class HelpAbout extends Activity {
 	    default:
 	        return super.onOptionsItemSelected(item);
 	    }
+	}
+	public void hp(View v) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://launchpad.net/bluetoothcarcontroller"));
+		startActivity(browserIntent);
 	}
 }

@@ -4,14 +4,14 @@
         android:layout_height="fill_parent"
         android:orientation="vertical" >
         <TextView
-            android:id="@+id/textView1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/about"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-        <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/about_text" />
+        <Button 
+            android:id="@+id/button_hp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/hp_button"
+            android:onClick="hp"/>
     </LinearLayout>

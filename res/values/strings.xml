@@ -3,9 +3,28 @@
     <string name="app_version">0.1</string>
     <string name="home">Home</string>
     <string name="about">Über</string>
-    <string name="about_text">Diese App wurde im Rahmen des Wettbewerbs "" von Oliver Fröhling, Paul Thiele und Maximilian Mühlbauer entwickelt.</string>
+    <string name="about_text">Diese App wurde im Rahmen des \"Energy Harvesting Design Wettbewerbs\" von Oliver Fröhling,
+        Paul Thiele und Maximilian Mühlbauer entwickelt.</string>
+    <string name="hp_button">Homepage</string>
     <string name="help">Hilfe</string>
-    <string name="help_text">Vieeeeeeeeeeeeeeeeeeeel Text</string>
+    <string name="first_run">Erster Start</string>
+    <string name="first_run_text">Klicken Sie auf "Gerät hinzufügen". Hier können sie die Einstellungen für das Gerät
+        (Name, Beschreibung und Bluetoothgerät) festlegen.</string>
+    <string name="device_options">Geräteoptionen</string>
+    <string name="device_options_text">Klicken Sie lang auf den Eintrag für das Gerät, um dieses zu löschen oder die Einstellungen
+        zu ändern.</string>
+    <string name="device_control_options">Gerätesteuerung</string>
+    <string name="device_control_options_text">Wenn sie kurz auf den Eintrag eines Gerätes klicken,
+        können sie im darauf folgenden Dialogfenster zwischen den Steuerungsoptionen für das Gerät wählen. Zur Zeit ist nur \"Lagesensor\"
+        implementiert.</string>
+    <string name="sensor_text">Hier können sie über das Menü Bluetooth aktivieren und deaktivieren, die Bluetoothverbindung herstellen,
+        die Steuerung beenden sowie zu den Einstellungnen wechseln.</string>
+    <string name="known_bugs">Bekannte Fehler</string>
+    <string name="known_bugs_text">Bei Geräten, die mit Android-Versionen vor Android 3 ausgestattet sind, wird der Status der
+        Bluetoothverbindung nicht korrekt angezeigt.</string>
+    
+    
+    
     <string name="since">Seit</string>
     <string name="running">läuft</string>
     <string name="add_device">Gerät hinzufügen</string>
